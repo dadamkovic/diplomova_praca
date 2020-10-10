@@ -1,0 +1,1495 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{uniza_utils}[2017/09/20 KRIS Utils Package]
+
+\RequirePackage{xstring}
+\RequirePackage{kvoptions}
+\SetupKeyvalOptions{family=unizautils, prefix=unizautils@}
+
+\DeclareBoolOption{hyperfootnotes}{
+  \PassOptionsToPackage{\CurrentOption}{hyperref}
+}
+
+\PassOptionsToPackage{unicode}{hyperref}
+
+\DeclareBoolOption{printversion}
+\DeclareComplementaryOption{noprintversion}{printversion}
+
+\DeclareBoolOption{pagelayout}
+\DeclareComplementaryOption{nopagelayout}{pagelayout}
+
+% even if pagelayout is specified, pagestyle and
+% thispagestyle are not redefined so that they change
+% geometry
+\DeclareBoolOption{nogeometry}
+\DeclareComplementaryOption{geometry}{nogeometry}
+
+% even if pagelayout is specified, frontmatter, backmatter,
+% mainmatter, etc. are not redefined.
+\DeclareBoolOption{noredefmatter}
+\DeclareComplementaryOption{redefmatter}{noredefmatter}
+
+\DeclareBoolOption{beamer}
+\DeclareComplementaryOption{nobeamer}{beamer}
+
+\DeclareBoolOption{nominted}
+\DeclareComplementaryOption{minted}{nominted}
+
+\DeclareStringOption[]{backend}
+
+\ProcessKeyvalOptions*\relax
+
+% pass optionas
+\PassOptionsToPackage{hyphens}{url}
+
+% for beamer compatibility
+\@ifundefined{if@openright}{
+	\newif\if@openright
+	\@openrightfalse
+}
+
+% defauls for listing and minted paths
+\newcommand{\mintedoutputdir}{.}
+\newcommand{\mintedoutputdirslash}{./}
+\newcommand{\listingspath}{}
+
+%-----------------------------------------------------------
+%			if \includeauxprefix is set, prefix
+%				  aux filenames with it
+%-----------------------------------------------------------
+
+% example: \def\includeauxprefix{\jobname\string_}
+
+\@ifundefined{includeauxprefix}{}{
+	\def\@include#1 {%
+	  \clearpage
+	  \if@filesw
+	    \immediate\write\@mainaux{\string\@input{\includeauxprefix#1.aux}}%
+	  \fi
+	  \@tempswatrue
+	  \if@partsw
+	    \@tempswafalse
+	    \edef\reserved@b{#1}%
+	    \@for\reserved@a:=\@partlist\do
+	      {\ifx\reserved@a\reserved@b\@tempswatrue\fi}%
+	  \fi
+	  \if@tempswa
+	    \let\@auxout\@partaux
+	    \if@filesw
+	      \immediate\openout\@partaux \includeauxprefix#1.aux
+	      \immediate\write\@partaux{\relax}%
+	    \fi
+	    \@input@{#1.tex}%
+	    \clearpage
+	    \@writeckpt{#1}%
+	    \if@filesw
+	      \immediate\closeout\@partaux
+	    \fi
+	  \else
+	    \deadcycles\z@
+	    \@nameuse{cp@#1}%
+	  \fi
+	  \let\@auxout\@mainaux
+	}%
+}
+
+%-----------------------------------------------------------
+%				hide stuff from printversion
+%-----------------------------------------------------------
+
+\ifunizautils@printversion
+	\newcommand{\viewonly}[1]{}
+	\newcommand{\ifviewonly}[2]{#2}
+\else
+	\newcommand{\viewonly}[1]{#1}
+	\newcommand{\ifviewonly}[2]{#1}
+\fi
+
+%-----------------------------------------------------------
+%                       Counters
+%-----------------------------------------------------------
+\usepackage{etoolbox}
+
+% counters need to go in rather late, otherwise they
+% can be broken by packages such as fncychap
+\AtEndPreamble{
+% Page count, figure count, ...
+\usepackage{totpages}
+\usepackage[figure,table,page]{totalcount}
+
+\def\totalalgorithms{\totalalgocfs}
+\def\iftotalalgorithms{\iftotalalgocfs}
+
+% bibliography items count
+\usepackage{totcount}
+\newtotcounter{citenum}
+\def\oldbibitem{} \let\oldbibitem=\bibitem
+\def\bibitem{\stepcounter{citenum}\oldbibitem}
+
+% if we are using biblatex
+\@ifundefined{AtBeginBibliography}{}{
+	\AtBeginBibliography{
+		\apptocmd{\finentry}{\stepcounter{citenum}}{}{}
+	}
+}
+
+% appendix count
+\usepackage{assoccnt}
+
+\newcounter{truechapters}
+\regtotcounter{truechapters}
+
+\newcounter{totalchapters}
+\newcounter{appendixchapters}
+\DeclareAssociatedCounters{chapter}{totalchapters,appendixchapters}
+\regtotcounter{totalchapters}
+\regtotcounter{appendixchapters}
+
+% protect appendix def under beamer
+\ifunizautils@beamer\else
+
+\preto\appendix{%
+  % save the number of true chapters
+  \setcounter{truechapters}{\value{chapter}}%
+  % reset the number of chapters
+  \setcounter{appendixchapters}{0}%
+}
+
+\fi
+
+% a patch for longtable when using totalcount
+\newif\ifLT@nocaption
+\preto\longtable{\LT@nocaptiontrue}
+\appto\endlongtable{%
+  \ifLT@nocaption
+    \addtocounter{table}{\m@ne}%
+  \fi}
+\preto\LT@caption{%
+  \noalign{\global\LT@nocaptionfalse}}
+}
+
+%-----------------------------------------------------------
+%                 Beamer-specific stuff
+%-----------------------------------------------------------
+\ifunizautils@beamer
+
+% set baselinestretch for beamer;
+% it is used in style macros for code
+\def\baselinestretch{1}
+
+% beamer localization
+\newtranslation[to=Slovak]{Definition}{Definícia}
+
+%-----------------------------------------------------------
+%                 Some stuff for documents
+%-----------------------------------------------------------
+\else
+
+\RequirePackage{hyperref}
+%\hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, filecolor=blue, urlcolor=blue}
+
+\RequirePackage[usenames,dvipsnames,table]{xcolor}
+\RequirePackage[]{graphicx}
+
+\fi
+
+% Graphics, and their extensions.
+\DeclareGraphicsExtensions{.pdf,.eps,.png,.jpeg,.jpg}
+
+%-----------------------------------------------------------
+%					iflabelexists
+%-----------------------------------------------------------
+
+% Defines the \iflabelexists{label}{then}{else} macro.
+% If the specified label exists, the then part is evaluated,
+% if not the else part is evaluated.
+\newcommand{\iflabelexists}[3]{\@ifundefined{r@#1}{#3}{#2}}
+
+% Produces a latex compilation error if the specified label
+% is not defined.
+\newcommand{\assertref}[1]{\iflabelexists{#1}{}{\message{LaTeX Warning: Label assert failed for #1}}}
+
+%-----------------------------------------------------------
+%					ifmacroexists
+%-----------------------------------------------------------
+\newcommand{\ifmacroexists}[3]{\@ifundefined{#1}{#3}{#2}}
+
+%-----------------------------------------------------------
+%                  Localization macro
+%-----------------------------------------------------------
+
+\newcommand{\addtolang}[2]{\AfterBabelLanguage{#1}{\ifcsname extras#1\endcsname \expandafter\addto\csname extras#1\endcsname{#2}\fi}}
+
+\newcommand{\addword}[3]{\AfterBabelLanguage{#1}{\ifcsname extras#1\endcsname \expandafter\addto\csname extras#1\endcsname{\renewcommand{#2}{#3}}\fi}}
+
+% DO NOT USE ANY LINEBREAKS!!!
+% Usage: \addtolang{language}{translations}.
+% Usage: \addword{language}{originalmacro}{translation}.
+
+%-----------------------------------------------------------
+%                     Generic stuff
+%-----------------------------------------------------------
+
+% ifChapter: a simple macro to detect whether \chapter exists
+\makeatletter
+\newif\ifChapter
+\@ifundefined{chapter}{\Chapterfalse}{\Chaptertrue}
+
+%include babel in base mode to enable localization
+\RequirePackage[base]{babel}
+
+% a macro, which disables a shorthand if it exists,
+% without triggering an error if it does not
+\def\shorthandoff#1{} % gets redefined, once babel included
+
+\def\uniza@shorthandoff#1{%
+	\@ifundefined{bbl@ifunset}{%
+		\@ifundefined{bbl@active@\string#1}{}{%
+			\shorthandoff{#1}
+		}%
+	}{%
+		\bbl@ifunset{bbl@active@\string#1}{}{\shorthandoff{#1}}%
+	}%
+}%
+
+%some common localizations
+\addtolang{slovak}{\renewcommand{\tablename}{Tab.}}
+
+% shorthand- breaks \cline in tabular; disable it
+\preto\tabular{\uniza@shorthandoff{-}}
+
+% to do stuff after a page ends
+\usepackage{afterpage}
+
+% verbatim and its font size
+\usepackage{verbatim}
+\usepackage{fancyvrb}
+\fvset{fontsize=\small}
+
+% blindtext generation
+\usepackage{blindtext}
+
+% figures and tables in landscape orientation
+\usepackage{rotating}
+
+% embed pdfs as whole pages
+\usepackage{pdfpages}
+
+% Allow arbitrary font sizes. Suppresses warnings.
+%\usepackage{lmodern}
+
+% if encxvlna is used, we need to turn it off for inlinecode
+% using \mubytein=0; if enctex is not enabled, we define mubytein as a counter to avoid errors
+\@ifundefined{mubytein}{\countdef\mubytein=0}{}
+
+%to do notes
+\RequirePackage{todonotes}
+
+%file attachments
+\RequirePackage{attachfile}
+
+% change default attachment icon
+\DeclareRobustCommand{\atfi@acroRotclip}{%
+\raisebox{-1.25bp}{\rotatebox{90}{\parbox[b][21bp]{12bp}{%
+\rule{0pt}{0pt}\pdfliteral{\atfi@acroPaperclip@data}}}%
+}}
+
+\def\atfi@icon@icon{Rotclip}
+\setkeys{AtFi}{color=0.9 0.65 0.25}
+
+%other includes
+\RequirePackage{keycommand}
+\RequirePackage{newfloat}
+\RequirePackage{caption}
+\RequirePackage{subcaption}
+
+%hyperlinks
+\RequirePackage{url}
+\urlstyle{same}
+
+% multiple columns
+\RequirePackage{multicol}
+% reduce vertical spacing before and after multicol
+\setlength{\multicolsep}{6.0pt plus 2.0pt minus 1.5pt}
+
+%tables
+\RequirePackage{array}
+\RequirePackage{multirow}
+\RequirePackage{diagbox}
+
+% Multi page tables.
+\usepackage{longtable}
+
+%tables - fixed-width column types
+\RequirePackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\newcolumntype{K}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
+\newcolumntype{X}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
+\newcolumntype{E}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
+
+%-----------------------------------------------------------
+%                   Bibliography stuff
+%-----------------------------------------------------------
+
+% disable babel shorthands for bibtex
+
+\AtBeginEnvironment{thebibliography}{%
+	\languageshorthands{none}%
+}%
+
+%-----------------------------------------------------------
+%                     Setting algorithms
+%-----------------------------------------------------------
+
+\usepackage[ruled,linesnumbered]{algorithm2e}
+% Example:
+%\begin{algorithm}[H]
+% \KwData{this text}
+% \KwResult{how to write algorithm with \LaTeX2e }
+% initialization\;
+% \While{not at end of this document}{
+%  read current\;
+%  \eIf{understand}{
+%   go to next section\;
+%   current section becomes this one\;
+%   }{
+%   go back to the beginning of current section\;
+%  }
+% }
+% \caption{How to write algorithms}
+%\end{algorithm}
+
+% NamedBlock
+\def\@NamedBlock@begin{}
+\def\@NamedBlock@end{}
+\SetKwBlock{@NamedBlock}{\@NamedBlock@begin}{\@NamedBlock@end}
+\newcommand{\NamedBlock}[3]{
+	\def\@NamedBlock@begin{#1}
+	\def\@NamedBlock@end{#2}
+	\@NamedBlock{#3}
+}
+
+\newcommand{\Function}[2]{%
+	\NamedBlock{function \normalfont{#1}}{end}{#2}%
+}
+
+% Do while block.
+\SetKwRepeat{Do}{do}{while}%
+
+% Set comments in gray color.
+\newcommand\algcommentstyle[1]{\small\textcolor{gray}{#1}}
+\SetCommentSty{algcommentstyle}
+
+% algorithmname
+\ifunizautils@beamer\else
+	\newcommand{\algorithmname}{\algorithmcfname}
+\fi
+
+\addtolang{slovak}{\renewcommand{\listalgorithmcfname}{Zoznam algoritmov}\renewcommand{\algorithmcfname}{Alg.}}
+
+%-----------------------------------------------------------
+%                	Math packages
+%-----------------------------------------------------------
+
+%mathematics
+\RequirePackage{amsmath}
+%\RequirePackage[full]{textcomp}
+\def\bmmax{2} % workaround for too many alphabets error
+\RequirePackage{amssymb,amsfonts,bm}
+\RequirePackage{siunitx}
+
+% diagonal fractions: \sfrac
+\RequirePackage{xfrac}
+
+% wideslash
+\newcommand\wideslash[2]{{}^{#1}/_{#2}}
+
+% math define equals
+\newcommand{\defeq}{=_\text{def}}
+
+% closed interval macros
+\newcommand{\bint}{[}
+\newcommand{\eint}{]}
+
+% compatibility fix: using amsth with mdframed
+\AtEndPreamble{
+\AtBeginDocument{%
+\@ifpackageloaded{mdframed}{%
+\@ifpackageloaded{amsthm}%
+ {%
+  \renewrobustcmd\mdf@patchamsthm{%
+   \chardef\kludge@catcode@hyphen=\catcode`\-
+   \catcode`\-=12
+   \let\mdf@deferred@thm@head\deferred@thm@head
+   \pretocmd{\deferred@thm@head}{\@inlabelfalse}%
+      {\mdf@PackageInfo{mdframed detected package amsthm ^^J%
+                        changed the theorem header of amsthm\MessageBreak}%
+      }{%
+       \mdf@PackageError{mdframed detected package amsthm ^^J%
+                         changed the theorem header of amsthm
+                         failed\MessageBreak}%
+       }%
+   \catcode`\-=\kludge@catcode@hyphen
+     }%
+ }{}%
+}{}%
+}}
+
+%-----------------------------------------------------------
+%        A macro to detect if arg output is empty
+%----------------------------------------------------------- 
+
+% if #1 does not print anything, uses #2, otherwise #3
+% also defines \argoutemptyFirstArg as #1 so that #1 can be reused within #2 and #3
+
+\newcommand{\ifargoutempty}[3]{%
+\def\argoutemptyFirstArg{#1}%
+\begingroup%
+\def\item{n}%
+\setbox0=\vbox{#1\unskip}\ifdim\wd0=0pt%
+\endgroup%
+	#2%
+\else%
+\endgroup%
+	#3%
+\fi%
+}
+
+% if #1 is empty, uses #2, otherwise #3
+% also defines \argoutemptyFirstArg as #1 so that #1 can be reused within #2 and #3
+\newcommand{\ifargempty}[3]{%
+\def\argoutemptyFirstArg{#1}%
+\if\relax\detokenize{#1}\relax%
+	#2%
+\else%
+	#3%
+\fi%
+}
+
+%-----------------------------------------------------------
+%                       LISTINGS
+%-----------------------------------------------------------
+
+% used to prevent linebreaks after captions
+\usepackage{needspace}
+
+% listing name for referencing
+\newcommand{\uniza@listingname}{Lst.}
+  
+% localization
+\addtolang{slovak}{\renewcommand{\opensourcecode}{[otvoriť zdrojový kód]}\renewcommand{\listingname}{\uniza@listingname}}
+
+% \newcommand{\mintedoutputdir}{.}
+% \newcommand{\mintedoutputdirslash}{./}
+% \newcommand{\listingspath}{}
+
+\@ifundefined{auxfiles}
+{}{
+	\ifargoutempty{\auxfiles}{
+		\renewcommand{\auxfiles}{auxfiles}
+	}{}
+	
+	\renewcommand{\mintedoutputdir}{\auxfiles}
+	\renewcommand{\mintedoutputdirslash}{\auxfiles/}
+}
+
+\newcommand{\opensourcecode}{[open source code]}
+\newcommand{\opensourcecodestyle}[1]{\raggedleft\vspace{-1em}\scriptsize#1\vspace{-1.55em}\vspace{\dimexpr (1em- \baselinestretch em)\relax}}
+\newcommand{\nocodestyle}{\vspace{-0.25em}\vspace{\dimexpr (1em- \baselinestretch em) / 3 \relax}}
+\newcommand{\nocodestyle@minted}{\vspace{0.25em}}
+\newcommand{\nocodestyle@nominted}{\vspace{-0.25em}}
+\newcommand{\uniza@endcodestyle}{\vspace{-0.4em}\vspace{\dimexpr (1em- \baselinestretch em) \relax}}
+
+%\inputcode: arg1 - language, arg2 - file
+\define@boolkey{inputcode}{noattach}{}
+\define@key{inputcode}{linenos}{\def\inputcode@linenos{#1}}
+\define@key{inputcode}{obeytabs}{\def\inputcode@obeytabs{#1}}
+\define@key{inputcode}{tabsize}{\def\inputcode@tabsize{#1}}
+\define@key{inputcode}{fontsize}{\def\inputcode@fontsize{#1}}
+\define@key{inputcode}{baselinestretch}{\def\inputcode@baselinestretch{#1}}
+\define@key{inputcode}{firstline}{\def\inputcode@firstline{#1}}
+\define@key{inputcode}{lastline}{\def\inputcode@lastline{#1}}
+
+\setkeys{inputcode}{linenos=true,noattach=true,obeytabs=true,tabsize=4,fontsize=\footnotesize,baselinestretch=1}
+
+%inlinecode environment: arg1 - language, arg2 - additional code to write into the container (e.g. \caption{}, \label{}, ...)
+\newcounter{inlinecode@filecounter}
+
+\define@boolkey{inlinecode}{noattach}{}
+\define@key{inlinecode}{caption}{\def\inlinecode@caption{#1}}
+\define@key{inlinecode}{label}{\def\inlinecode@label{#1}}
+\define@key{inlinecode}{linenos}{\def\inlinecode@linenos{#1}}
+\define@key{inlinecode}{obeytabs}{\def\inlinecode@obeytabs{#1}}
+\define@key{inlinecode}{tabsize}{\def\inlinecode@tabsize{#1}}
+\define@key{inlinecode}{fontsize}{\def\inlinecode@fontsize{#1}}
+\define@key{inlinecode}{baselinestretch}{\def\inlinecode@baselinestretch{#1}}
+\define@key{inlinecode}{ext}{\def\inlinecode@ext{#1}}
+\define@key{inlinecode}{firstline}{\def\inlinecode@firstline{#1}}
+\define@key{inlinecode}{lastline}{\def\inlinecode@lastline{#1}}
+
+\setkeys{inlinecode}{noattach=true,linenos=true,obeytabs=true,tabsize=4,fontsize=\footnotesize,baselinestretch=1}
+
+% code environment
+\newenvironment{code}{%
+\begin{center}\captionsetup{type=listing,singlelinecheck=off,justification=raggedright,position=top}\needspace{2\baselineskip}}%
+{\end{center}\uniza@endcodestyle}%
+
+\newcommand{\uniza@DetermineExt}[1]{%
+	\def\inlinecode@ext{txt}%
+	\IfStrEq{#1}{python}{\def\inlinecode@ext{py}}{}%
+}%
+%
+% hacks borrowed from minted to deal with utf stuff
+\newcounter{uniza@FancyVerbLineTemp}
+\newcommand{\uniza@write@detok}[1]{%
+  \immediate\write\FV@OutFile{\detokenize{#1}}}
+\newcommand{\uniza@FVB@VerbatimOut}[1]{%
+  \setcounter{uniza@FancyVerbLineTemp}{\value{FancyVerbLine}}%
+  \@bsphack
+  \begingroup
+    \FV@UseKeyValues
+    \FV@DefineWhiteSpace
+    \def\FV@Space{\space}%
+    \FV@DefineTabOut
+    \let\FV@ProcessLine\uniza@write@detok
+    \immediate\openout\FV@OutFile #1\relax
+    \let\FV@FontScanPrep\relax
+    \let\@noligs\relax
+    \FV@Scan
+}
+\newcommand{\uniza@FVE@VerbatimOut}{%
+  \immediate\closeout\FV@OutFile
+	\endgroup\@esphack
+  \setcounter{FancyVerbLine}{\value{uniza@FancyVerbLineTemp}}
+}%
+
+%---------------------------
+% the version without minted
+%---------------------------
+\ifunizautils@nominted
+
+\DeclareFloatingEnvironment[name=\uniza@listingname,within=none]{listing}
+
+% we need to defer listings include after babel has been included, for shorthands not to break the listings
+\AtEndPreamble{
+
+\let\uniza@endcodestyle@tmp\uniza@endcodestyle
+\def\uniza@endcodestyle{\uniza@endcodestyle@tmp\vspace{-0.5em}}
+
+\RequirePackage{listingsutf8}
+
+\def\listingcounter{lstlisting}
+\DeclareTotalCounter{\listingcounter}
+\def\totallistings{\totallstlistings}
+\def\iftotallistings{\iftotallstlistings}
+
+% colors
+\definecolor{lst@comment}{HTML}{408080}
+\definecolor{lst@keyword}{HTML}{008000}
+\definecolor{lst@string}{HTML}{BA2121}
+
+% listings settings
+\lstset{
+    breaklines=true,
+	commentstyle=\color{lst@comment},
+    keywordstyle=\color{lst@keyword},
+	stringstyle=\color{lst@string},
+	inputencoding=utf8/cp1250,
+	numberstyle=\tiny,
+    extendedchars = true,  % Extended ASCII
+    texcl         = false,  % Activate LaTeX commands in comments
+    mathescape    = false,   % Mathematical expressions between $
+    captionpos    = b,     % Caption position
+    showstringspaces=false,
+    basicstyle={\ttfamily},
+    columns=spaceflexible,
+    showlines=true,
+    numbers=left,
+%    literate=%
+%        {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+%        {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+%        {à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+%        {À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+%        {ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+%        {Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1  {Ü}{{\"U}}1
+%        {â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+%        {Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+%        {ů}{{\r{u}}}1
+%        {Ů}{{\r{U}}}1
+%        {œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+%        {ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+%        {€}{{\EUR}}1 {£}{{\pounds}}1
+%        {č}{{\v{c}}}1
+%        {ď}{{\v{d}}}1
+%        {ň}{{\v{n}}}1
+%        {ř}{{\v{r}}}1
+%        {š}{{\v{s}}}1
+%        {ť}{{\v{t}}}1
+%        {ý}{{\'y}}1
+%        {ž}{{\v{z}}}1
+%        {Č}{{\v{C}}}1
+%        {Ď}{{\v{D}}}1
+%        {Ň}{{\v{N}}}1
+%        {Ř}{{\v{R}}}1
+%        {Š}{{\v{S}}}1
+%        {Ť}{{\v{T}}}1
+}
+
+\newcommand{\inputcode}[3][]{
+\begingroup
+\setkeys*{inputcode}{#1}
+	\let\XKV@rm@tmp\XKV@rm
+	\ifboolexpr{ bool{\inputcode@linenos} }{
+		\edef\XKV@rm{numbers=left,\XKV@rm@tmp}
+	}{
+		\edef\XKV@rm{numbers=none,\XKV@rm@tmp}
+	}
+	\@ifundefined{inputcode@firstline}{}{
+		\let\XKV@rm@tmp\XKV@rm
+		\edef\XKV@rm{firstline=\inputcode@firstline,firstnumber=\inputcode@firstline,\XKV@rm@tmp}
+	}
+	\@ifundefined{inputcode@lastline}{}{
+		\let\XKV@rm@tmp\XKV@rm
+		\edef\XKV@rm{lastline=\inputcode@lastline,\XKV@rm@tmp}
+	}
+	% language replacement rules; to make
+	% this compatible with the minted version
+	\def\lang{#2}
+	% tex and latex highlighting does not work well
+	\IfStrEq{#2}{latex}{\def\lang{}}{}%
+	\IfStrEq{#2}{tex}{\def\lang{}}{}%
+	% text means no highlighting
+	\IfStrEq{#2}{text}{\def\lang{}}{}%
+	\let\XKV@rm@tmp\XKV@rm%
+	\edef\XKV@rm{\XKV@rm@tmp,language=\lang}%
+	\let\XKV@rm@tmp\XKV@rm%
+	\edef\XKV@rm{\XKV@rm@tmp,tabsize=\inputcode@tabsize}%
+	\ifviewonly{%
+		\ifKV@inputcode@noattach%
+			\nocodestyle%
+			\nocodestyle@nominted%
+		\else%
+			{\opensourcecodestyle{\textattachfile[color=0 0 0.5]{#3}{\opensourcecode}\vspace{1em}}\par}%
+		\fi%
+	}{%
+		\nocodestyle%
+		\nocodestyle@nominted%
+	}%
+	\inputcode@fontsize
+	\renewcommand{\baselinestretch}{\inputcode@baselinestretch}
+	\def\inputcode@zz{\lstinputlisting[}
+	\expandafter\inputcode@zz\XKV@rm]{\listingspath#3}
+\endgroup
+}
+
+\newenvironment{inlinecode}[2][]{
+	\begingroup%
+	\VerbatimEnvironment%
+	\mubytein=0%
+	\setkeys*{inlinecode}{#1}%
+	\let\inlinecode@XKV@rm\XKV@rm%
+	\def\inlinecode@SecondArg{#2}%
+	% the \if\else\fi construct seems to break code below,
+	% so we use ifundefined with an auxiliary macro instead
+	\let\inlinecode@noattach@aux\relax%
+	\ifKV@inlinecode@noattach\else%
+		\def\inlinecode@noattach@aux{}%
+	\fi%
+	\stepcounter{inlinecode@filecounter}%
+	\@ifundefined{inlinecode@ext}{%
+		\uniza@DetermineExt{#2}%
+	}{}%
+	\def\inlinecode@filename{\jobname-code-\theinlinecode@filecounter.\inlinecode@ext}%
+    \let\FVB@VerbatimOut\uniza@FVB@VerbatimOut%
+    \let\FVE@VerbatimOut\uniza@FVE@VerbatimOut%
+	\begin{VerbatimOut}{\inlinecode@filename}%
+}{
+	\end{VerbatimOut}
+	\def\inlinecode@zz{\inputcode[}%
+	\begin{code}%
+	\@ifundefined{inlinecode@caption}{}{%
+		\caption{\inlinecode@caption}%
+	}%
+	\let\inlinecode@XKV@rmtmp\inlinecode@XKV@rm%
+	\ifKV@inlinecode@noattach%
+		\edef\inlinecode@XKV@rm{\inlinecode@XKV@rmtmp,noattach=true}%
+	\else%
+		\edef\inlinecode@XKV@rm{\inlinecode@XKV@rmtmp,noattach=false}%
+	\fi%
+	\let\inlinecode@XKV@rmtmp\inlinecode@XKV@rm%
+	\edef\inlinecode@XKV@rm{\inlinecode@XKV@rmtmp,tabsize=\inlinecode@tabsize}%
+	\@ifundefined{inlinecode@label}{}{%
+		\label{\inlinecode@label}%
+	}%
+	\expandafter\inlinecode@zz\inlinecode@XKV@rm,fontsize=\inlinecode@fontsize,baselinestretch=\inlinecode@baselinestretch,obeytabs=\inlinecode@obeytabs,tabsize=\inlinecode@tabsize,linenos=\inlinecode@linenos]{\inlinecode@SecondArg}{\mintedoutputdirslash\inlinecode@filename}%
+	\end{code}%
+	\endgroup\noindent}
+
+} % \AtEndPreamble
+
+%---------------------------
+% the version with minted
+%---------------------------
+\else % if minted
+
+% save original fancyvrb obeytabs macros
+\let\unizatmp@FV@@ObeyTabs\FV@@ObeyTabs
+\let\unizatmp@FV@TrueTab\FV@TrueTab
+
+\RequirePackage[cache,outputdir={\mintedoutputdir}]{minted}
+\newcommand{\listingname}{\uniza@listingname}
+\renewcommand{\listingscaption}{\uniza@listingname}
+\addtolang{slovak}{\renewcommand{\listingname}{\uniza@listingname}}
+
+% restore original fancyvrb obeytabs macros
+\let\FV@@ObeyTabs\unizatmp@FV@@ObeyTabs
+\let\FV@TrueTab\unizatmp@FV@TrueTab
+
+\setminted{breaklines=true}
+
+\def\listingcounter{listing}
+
+\AtEndPreamble{
+	\DeclareTotalCounter{\listingcounter}
+} % \AtEndPreamble
+
+\newcommand{\inputcode}[3][]{
+\begingroup
+	\setkeys*{inputcode}{#1}
+	\ifviewonly{%
+		\ifKV@inputcode@noattach%
+			\nocodestyle%
+			\nocodestyle@minted%
+		\else%
+			{\opensourcecodestyle{\textattachfile[color=0 0 0.5]{#3}{\opensourcecode}}\par}%
+		\fi%
+	}{%
+		\nocodestyle%
+		\nocodestyle@minted%
+	}%
+	\@ifundefined{inputcode@firstline}{}{\setminted{firstline=\inputcode@firstline}}
+	\@ifundefined{inputcode@lastline}{}{\setminted{lastline=\inputcode@lastline}}
+	\def\inputcode@zz{\inputminted[}
+	\expandafter\inputcode@zz\XKV@rm,fontsize=\inputcode@fontsize,baselinestretch=\inputcode@baselinestretch,obeytabs=\inputcode@obeytabs,tabsize=\inputcode@tabsize,linenos=\inputcode@linenos]{#2}{\listingspath#3}
+\endgroup
+}
+
+\newenvironment{noattach@inlinecode}[2]{
+	\begin{center}
+	\captionsetup{type=listing,singlelinecheck=off,justification=raggedright,position=top}
+	\needspace{2\baselineskip}
+	\@ifundefined{inlinecode@caption}{}{
+		\caption{\inlinecode@caption}
+	}
+	\@ifundefined{inlinecode@label}{}{
+		\label{\inlinecode@label}
+	}
+	\def\inlinecode@zz{\begin{minted}[}
+	\expandafter\inlinecode@zz\inlinecode@XKV@rm,fontsize=\inlinecode@fontsize,baselinestretch=\inlinecode@baselinestretch,obeytabs=\inlinecode@obeytabs,tabsize=\inlinecode@tabsize,linenos=\inlinecode@linenos]{#2}%
+}%
+{%
+	\end{minted}
+	\end{center}\uniza@endcodestyle}
+	
+\newenvironment{inlinecode}[2][]{
+	\begingroup
+	\VerbatimEnvironment
+	\mubytein=0
+	\setkeys*{inlinecode}{#1}
+	\let\inlinecode@XKV@rm\XKV@rm
+	\def\inlinecode@SecondArg{#2}
+	% the \if\else\fi construct seems to break code below,
+	% so we use ifundefined with an auxiliary macro instead
+	\let\inlinecode@noattach@aux\relax
+	\ifKV@inlinecode@noattach\else
+		\def\inlinecode@noattach@aux{}
+	\fi
+	\@ifundefined{inlinecode@noattach@aux}{
+	\begin{noattach@inlinecode}{#1}{#2}%
+	}{
+	\stepcounter{inlinecode@filecounter}
+	\@ifundefined{inlinecode@ext}{%
+		\uniza@DetermineExt{#2}%
+	}{}%
+	\def\inlinecode@filename{\jobname-code-\theinlinecode@filecounter.\inlinecode@ext}
+    \let\FVB@VerbatimOut\minted@FVB@VerbatimOut
+    \let\FVE@VerbatimOut\minted@FVE@VerbatimOut
+	\begin{VerbatimOut}{\inlinecode@filename}%
+	}%
+}{
+	\@ifundefined{inlinecode@noattach@aux}{
+	\end{noattach@inlinecode}
+	}{
+	\end{VerbatimOut}
+	\def\inlinecode@zz{\inputcode[}
+	\begin{code}
+	\@ifundefined{inlinecode@caption}{}{
+		\caption{\inlinecode@caption}
+	}
+	\@ifundefined{inlinecode@label}{}{
+		\label{\inlinecode@label}
+	}
+	\let\inlinecode@XKV@rmtmp\inlinecode@XKV@rm
+	\ifKV@inlinecode@noattach
+		\edef\inlinecode@XKV@rm{\inlinecode@XKV@rmtmp,noattach=true}
+	\else
+		\edef\inlinecode@XKV@rm{\inlinecode@XKV@rmtmp,noattach=false}
+	\fi%
+	\expandafter\inlinecode@zz\inlinecode@XKV@rm,fontsize=\inlinecode@fontsize,baselinestretch=\inlinecode@baselinestretch,obeytabs=\inlinecode@obeytabs,tabsize=\inlinecode@tabsize,linenos=\inlinecode@linenos]{\inlinecode@SecondArg}{\mintedoutputdirslash\inlinecode@filename}
+	\end{code}} %
+	\endgroup\noindent}
+
+\fi % \ifunizautils@nominted
+
+%-----------------------------------------------------------
+%							VIDEOS
+%-----------------------------------------------------------
+
+\RequirePackage{movie15}
+\RequirePackage{marvosym}
+
+\newcommand{\MoviePlay}[1]{\movieref[default]{#1}{{\Large\Forward}}}
+\newcommand{\MovieStop}[1]{\movieref[stop]{#1}{{\Large\SquareSteel}}}
+\newcommand{\MovieControls}[1]{\MoviePlay{#1} \MovieStop{#1}}
+  
+%-----------------------------------------------------------
+% 							LOGS
+%-----------------------------------------------------------
+ 
+\newcommand{\logname}{Log}
+\newcommand{\loglistname}{List of Logs}
+
+% localization
+\addtolang{slovak}{\renewcommand{\logname}{Log}\renewcommand{\loglistname}{Zoznam logov}}
+ 
+\DeclareFloatingEnvironment[name=\logname,listname=\loglistname,within=none]{logfl}
+\newcommand{\listoflogs}{\listoflogfl}
+
+ \newkeyenvironment{loglist}[caption, label][][0]
+ {\VerbatimEnvironment
+ \begin{center}\small
+ \captionsetup{type=logfl,singlelinecheck=off,justification=raggedright,position=top}
+ \needspace{2\baselineskip}
+ \ifcommandkey{caption}{\caption{\commandkey{caption}}}{\vspace{-1em}}
+  \ifcommandkey{label}{\label{\commandkey{label}}}{}
+ \begin{Verbatim}}
+ {\end{Verbatim}
+ \end{center}
+ }
+
+%-----------------------------------------------------------
+%		A macro to produce unnumbered parts
+%		that appear in TOC
+%-----------------------------------------------------------
+
+\newcommand{\unpart}[2][]{
+	\phantomsection
+	\ifthenelse{\equal{#1}{}}{
+		\addcontentsline{toc}{part}{#2}
+		\part*{#2}
+	}{
+		\addcontentsline{toc}{part}{#1}
+		\part*{#2}	
+	}
+}
+
+%-----------------------------------------------------------
+%		A macro to produce unnumbered chapters
+%		that appear in TOC and marks
+%-----------------------------------------------------------
+
+\newcommand{\unchapter}[2][]{
+	\phantomsection
+	\ifthenelse{\equal{#1}{}}{
+		\chapter*{#2}
+		\chaptermark{#2}
+		\addcontentsline{toc}{chapter}{#2}
+	}{
+		\chapter*{#2}
+		\chaptermark{#1}
+		\addcontentsline{toc}{chapter}{#1}
+	}
+}
+
+% Only produce the mark without producing the actual heading.
+\newcommand{\unchaptermark}[1]{
+	\phantomsection
+	\markboth{\MakeUppercase{#1}}{}
+	\addcontentsline{toc}{chapter}{#1}
+}
+
+\newcommand{\unsection}[2][]{
+	\phantomsection
+	\ifthenelse{\equal{#1}{}}{
+		\section*{#2}
+		\markboth{\MakeUppercase{#2}}{}
+		\addcontentsline{toc}{section}{#2}
+	}{
+		\section*{#2}
+		\markboth{\MakeUppercase{#1}}{}
+		\addcontentsline{toc}{section}{#1}
+	}
+}
+
+% Only produce the mark without producing the actual heading.
+\newcommand{\unsectionmark}[1]{
+	\phantomsection
+	\markboth{\MakeUppercase{#1}}{}
+	\addcontentsline{toc}{section}{#1}
+}
+
+\newcommand{\unsubsection}[2][]{
+	\phantomsection
+	\ifthenelse{\equal{#1}{}}{
+		\subsection*{#2}
+		\markboth{\MakeUppercase{#2}}{}
+		\addcontentsline{toc}{subsection}{#2}
+	}{
+		\markboth*{#2}
+		\markboth{\MakeUppercase{#1}}{}
+		\addcontentsline{toc}{subsection}{#1}
+	}
+}
+
+% Only produce the mark without producing the actual heading.
+\newcommand{\unsubsectionmark}[1]{
+	\phantomsection
+	\markboth{\MakeUppercase{#1}}{}
+	\addcontentsline{toc}{subsection}{#1}
+}
+
+%-----------------------------------------------------------
+%					Explicit part end
+%-----------------------------------------------------------
+
+\usepackage{bookmark}
+
+\newcommand{\partend}{
+	\addtocontents{toc}{\bigskip}% perhaps as well
+	\bookmarksetup{startatroot}% this is it
+}
+
+%-----------------------------------------------------------
+%                 More document-specific stuff
+%-----------------------------------------------------------
+\ifunizautils@beamer\else
+
+%-----------------------------------------------------------
+%                 Inline enumeration lists
+%-----------------------------------------------------------
+
+\RequirePackage[inline]{enumitem}
+\newlist{inlinelist}{enumerate*}{1}
+\setlist*[inlinelist,1]{label=\itshape(\alph*)}
+
+% alignment in itemize and enumerate
+\newcommand{\listalign}{\makebox[11em][l]}
+
+%-----------------------------------------------------------
+%          A special title, author, date macro
+%-----------------------------------------------------------
+
+\let\tmptitle\title
+\renewcommand{\title}[1]{\tmptitle{#1}\def\Title{#1}}
+\def\thetitle{\Title}
+
+\newcommand{\subtitle}[1]{\def\Subtitle{#1}}
+\def\thesubtitle{\Subtitle}
+
+\let\tmpauthor\author
+\renewcommand{\author}[1]{\tmpauthor{#1}\def\Author{#1}}
+\def\theauthor{\Author}
+
+\let\tmpdate\date
+\renewcommand{\date}[1]{\tmpdate{#1}\def\Date{#1}}
+\def\thedate{\Date}
+
+%-----------------------------------------------------------
+%             Abbreviation and term database
+%-----------------------------------------------------------   
+%acronyms
+\RequirePackage{acro}
+%% probably a good idea for the nomenclature entries:
+\acsetup{hyperref=true}
+\acsetup{first-style=short}
+
+\newlist{acronyms}{description}{1}
+\newcommand*\addcolon[1]{#1:}
+\setlist[acronyms]{
+  	labelwidth=3em,
+  	leftmargin=3.5em,
+  	itemindent=0pt,
+  	font=\addcolon
+}
+
+% localization for # of pages symbol in the list of acronyms
+\DeclareTranslation{slovak}{acronym-page-name}{s.}
+\DeclareTranslation{slovak}{acronym-pages-name}{s.}
+
+
+\expandafter\let\csname @acrogetproperty@nn@orig\expandafter\endcsname\expandafter=\csname __acro_get_property:nn\endcsname
+
+\def\uniza@acro@currentletter{}
+
+% use this to group acro entries by their first letters
+% * in order to make this work with math symbols as first
+%   letters, you need to wrap them in braces, e.g.:
+%		{$\varepsilon$}-greedy;
+% * if the short form only contains the symbol, include one
+%   extra pair of braces, e.g.:
+%		{$R^2$}{}
+
+\def\unizaacrobyletter{
+\expandafter\def\csname __acro_get_property:nn\endcsname##1##2{%
+	\begingroup%
+	\edef\tmpshort{\@acrogetproperty@nn@orig{##1}{##2}}%
+	\IfStrEq{##1}{short}{%
+		\begingroup%
+		\def\phantomsection{}%
+		\def\label{}%
+		\StrChar{\tmpshort}{1}[\FirstLetter]%
+		\IfBeginWith{\tmpshort}{\uniza@acro@currentletter}{}{%
+			\global\edef\uniza@acro@currentletter{\FirstLetter}%
+			\\[-0.5em]%
+ 			{\huge \FirstLetter} \\[1em]%
+ 			\hspace*{\labelindent}\hspace{-\labelwidth}\hspace{-\labelsep}%
+		}%
+		\endgroup
+	}{}
+	\tmpshort%
+	\endgroup%
+}
+}
+
+\fi %ifunizautils@beamer
+
+%-----------------------------------------------------------
+%                    Highlight boxes
+%-----------------------------------------------------------
+
+% highlight macro \hl
+\usepackage[normalem]{ulem} % use normalem to protect \emph
+\def\hl{\bgroup\markoverwith
+  {\textcolor{yellow}{\rule[-.5ex]{2pt}{2.5ex}}}\ULon}
+
+%For use in equations:
+%	\begin{empheq}[innerbox=\Highlight]{align*}
+%		content...
+%	\end{empheq}
+\RequirePackage{empheq}
+
+\def\HiLi{\leavevmode\rlap{\hbox to \hsize{\color{gray!30}\leaders\hrule height .8\baselineskip depth .5ex\hfill}}}
+
+\newcommand{\mathhl}[1]{\colorbox{gray!30}{$\displaystyle #1$}}
+
+%-----------------------------------------------------------
+%                     Sticky notes
+%-----------------------------------------------------------
+\usetikzlibrary{shadows}
+
+\definecolor{stickycolor}{RGB}{255,250,185}
+\def\stickycolor{stickycolor}
+\newcommand{\StickyNoteWidth}{0.8\textwidth}
+\newcommand{\stickynotename}{Note}
+\addtolang{slovak}{\renewcommand{\stickynotename}{Poznámka}}
+\newcommand{\stickynotestyle}{\centering}
+
+\makeatletter
+\pgfdeclareshape{document}{
+\inheritsavedanchors[from=rectangle] % this is nearly a rectangle
+\inheritanchorborder[from=rectangle]
+\inheritanchor[from=rectangle]{center}
+\inheritanchor[from=rectangle]{north}
+\inheritanchor[from=rectangle]{south}
+\inheritanchor[from=rectangle]{west}
+\inheritanchor[from=rectangle]{east}
+% ... and possibly more
+\backgroundpath{% this is new
+% store lower right in xa/ya and upper right in xb/yb
+\southwest \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+\northeast \pgf@xb=\pgf@x \pgf@yb=\pgf@y
+% compute corner of ‘‘flipped page’’
+\pgf@xc=\pgf@xb \advance\pgf@xc by-10pt % this should be a parameter
+\pgf@yc=\pgf@yb \advance\pgf@yc by-10pt
+% construct main path
+\pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+\pgfpathlineto{\pgfpoint{\pgf@xa}{\pgf@yb}}
+\pgfpathlineto{\pgfpoint{\pgf@xc}{\pgf@yb}}
+\pgfpathlineto{\pgfpoint{\pgf@xb}{\pgf@yc}}
+\pgfpathlineto{\pgfpoint{\pgf@xb}{\pgf@ya}}
+\pgfpathclose
+% add little corner
+\pgfpathmoveto{\pgfpoint{\pgf@xc}{\pgf@yb}}
+\pgfpathlineto{\pgfpoint{\pgf@xc}{\pgf@yc}}
+\pgfpathlineto{\pgfpoint{\pgf@xb}{\pgf@yc}}
+\pgfpathlineto{\pgfpoint{\pgf@xc}{\pgf@yc}}
+}
+}
+
+\DeclareFloatingEnvironment[placement={!htbp},name=\stickynotename]{uniza@stickynotefloat}
+\DeclareCaptionLabelSeparator{bar}{ | }
+
+\captionsetup[uniza@stickynotefloat]{labelsep=bar,labelfont={bf,sc,large},textfont=bf,justification=justified,singlelinecheck=off}
+
+\newcommand{\StickyNote}[2]{
+\begingroup
+% save \baselinestretch
+\let\uniza@tmpbaselinestretch\baselinestretch
+\begin{uniza@stickynotefloat}
+\stickynotestyle
+% restore baselinestretch
+\def\baselinestretch{\uniza@tmpbaselinestretch}\@currsize
+\begin{tikzpicture}
+\node[
+document,
+draw,
+drop shadow={
+  shadow xshift=2pt,
+  shadow yshift=-4pt
+},
+inner xsep=7pt,
+fill=\stickycolor,
+%xslant=-0.1,
+%yslant=0.1,
+inner ysep=10pt
+] {
+\parbox[t][][c]{\StickyNoteWidth}{
+\caption{#1}
+\parindent1em
+\noindent
+#2
+}
+};
+\end{tikzpicture}
+\end{uniza@stickynotefloat}
+\endgroup
+}
+
+\makeatother
+
+% usage: \StickyNote{Heading}{Content}.
+
+%-----------------------------------------------------------
+%                   Optional content
+%-----------------------------------------------------------
+\usepackage{environ}
+\usepackage{suffix}
+
+% setup the markup
+\newcommand{\optionalcolor}{red!50!black}
+\newcommand{\optionalmarkup}{\color{\optionalcolor}}
+
+% optional content: starred and unstarred version
+\makeatletter
+\newcommand{\opt}{%
+	\@ifstar%
+		\optStar%
+		\optNoStar%
+}
+\makeatother
+
+% the unstarred version
+\newcommand{\optNoStar}[1]{#1}
+\newenvironment{optional}{}{}
+
+% the starred version ignores markup but respects hidden
+\newcommand{\optStar}[1]{#1}
+\newenvironment{optional*}{}{}
+
+% content  is to be shown only when optional is hidden
+\newcommand{\wOptHidden}[1]{}
+\NewEnviron{wOptionalHidden}{}
+
+% the setoptional macro, which determines the behaviour
+\def\setoptional#1{%
+	\IfStrEq{#1}{markup}{%
+		\renewenvironment{optional}{%
+		\begingroup%
+		\optionalmarkup%
+		}{%
+		\endgroup%
+		}%
+		\renewcommand{\optNoStar}[1]{%
+			\begingroup\optionalmarkup##1\endgroup%
+		}%
+		\renewcommand\optStar[1]{##1}%
+		\renewenvironment{optional*}{}{}%
+		\renewcommand{\wOptHidden}[1]{}%
+		\RenewEnviron{wOptionalHidden}{}%
+	}{%
+	\IfStrEq{#1}{hidden}{%
+		\RenewEnviron{optional}{}%
+		\renewcommand{\optNoStar}[1]{}%
+		\renewcommand\optStar[1]{}%
+		\RenewEnviron{optional*}{}%
+		\renewcommand{\wOptHidden}[1]{##1}%
+		\renewenvironment{wOptionalHidden}{}{}%
+	}{%
+	\IfStrEq{#1}{show}{%
+		\renewenvironment{optional}{}{}%
+		\renewcommand{\optNoStar}[1]{##1}%
+		\renewcommand{\optStar}[1]{##1}%
+		\renewenvironment{optional*}{}{}%
+		\renewcommand{\wOptHidden}[1]{}%
+		\RenewEnviron{wOptionalHidden}{}%
+	}{\PackageError{unizautils}{Unknown optional handler #1.}{}}%
+	}}%
+}
+
+%-----------------------------------------------------------
+%                         Csquotes
+%-----------------------------------------------------------
+
+\RequirePackage[autostyle=true,maxlevel=5]{csquotes}
+
+%UGLY HACK FOR USING csquotes with libertine
+\def\alloc@#1#2#3#4#5%
+ {\ifnum\count1#1<#4% make sure there's still room
+    \allocationnumber\count1#1
+    \global\advance\count1#1\@ne
+    \global#3#5\allocationnumber
+    \wlog{\string#5=\string#2\the\allocationnumber}%
+  \else\ifnum#1<6
+    \def\etex@dummy@definition{}% <-- code added
+    \begingroup \escapechar\m@ne
+    \expandafter\alloc@@\expandafter{\string#2}#5%
+  \else\errmessage{No room for a new #2}\fi\fi
+ }
+
+\DeclareQuoteStyle[]{slovak}
+{\quotedblbase}{\textquotedblleft}
+{\quotesinglbase}{\textquoteleft}
+
+%----------------------------------------------------------
+%	An alternative to \caption that applies \centering
+%   even with manual \\.
+%----------------------------------------------------------
+
+\usepackage{varwidth,calc}
+
+\newcommand{\breakcaption}{\@dblarg\emit@breakcaption}
+\long\def\emit@breakcaption[#1]#2{%
+  \expandafter\caption\expandafter[\expandafter\emit@removeafter#1\\\@nil]{%
+    \begin{varwidth}[t]{\textwidth-\widthof{\figurename\space\thefigure:\space}}
+    #2
+    \end{varwidth}%
+  }%
+}
+\def\emit@removeafter#1\\#2\@nil{#1}
+
+%----------------------------------------------------------
+%						angl. mark
+%----------------------------------------------------------
+
+\makeatletter
+\def\angl{\@ifstar\@@angl\@angl}
+
+% obali argument do \foreignlanguage{english}; prida skratku angl.
+\newcommand{\@angl}[1]{angl. \foreignlanguage{english}{#1}}
+
+% obali argument do \foreignlanguage{english}; bez skratky angl.
+\newcommand{\@@angl}[1]{\foreignlanguage{english}{#1}}
+\makeatother
+
+%-----------------------------------------------------------
+%                        Page layout
+%-----------------------------------------------------------
+
+\makeatletter
+\ifunizautils@pagelayout
+
+\ifunizautils@nogeometry\else
+
+\RequirePackage{geometry}
+
+% we define the default page format
+\newcommand{\defaultmargins}{top=1.25cm,bottom=1.5cm,left=3cm,right=2.5cm,head=1cm,headsep=0.75cm,foot=1cm,includehead,includefoot}
+
+% applies the default geometry, followed by any
+% specified changes 
+\newcommand{\changegeometry}[1]{
+	\begingroup
+	\protected@edef\x{%
+	  \endgroup
+	  \noexpand\newgeometry{\defaultmargins,#1}
+	}
+	\x
+}
+
+% defines a geometry using \changegeometry{#2} and saves it
+% under name #1
+\newcommand{\defgeometry}[2]{
+	\savegeometry{origgeometry}
+	\changegeometry{#2}
+	\savegeometry{#1}
+	\loadgeometry{origgeometry}
+}
+
+\defgeometry{empty}{}
+\defgeometry{default}{}
+
+% we redefine thispagestyle so that it also applies
+% a geometry with the same name, if available
+\let\origthispagestyle=\thispagestyle
+\renewcommand{\thispagestyle}[1]{
+	\savegeometry{origgeometry}
+	\afterpage{\egroup\loadgeometry{origgeometry}\bgroup}
+	
+	% save \baselinestretch
+	\let\uniza@tmpbaselinestretch\baselinestretch
+	
+	\@ifundefined{Gm@restore@@#1}{
+		\loadgeometry{default}
+	}{
+		\loadgeometry{#1}
+	}
+	
+	% restore baselinestretch
+	\def\baselinestretch{\uniza@tmpbaselinestretch}\@currsize
+	
+	\fancyhfoffset[O]{0pt} %recalculate fancy header stuff after newgeometry
+	\origthispagestyle{#1}
+}
+
+% the same modification for pagestyle
+\let\origpagestyle=\pagestyle
+\renewcommand{\pagestyle}[1]{
+	% save \baselinestretch
+	\let\uniza@tmpbaselinestretch\baselinestretch
+
+	\@ifundefined{Gm@restore@@#1}{
+		\loadgeometry{default}
+	}{
+		\loadgeometry{#1}
+	}
+	
+	% restore baselinestretch
+	\def\baselinestretch{\uniza@tmpbaselinestretch}\@currsize
+	
+	\fancyhfoffset[O]{0pt} %recalculate fancy header stuff after newgeometry
+	\origpagestyle{#1}
+}
+
+\fi % nogeometry
+
+\RequirePackage{fancyhdr}
+
+%-----------------------------------------------------------
+% Redefine frontmatter, mainmatter and backmatter to use
+% the appropriate page styles.
+%-----------------------------------------------------------
+
+\ifunizautils@noredefmatter\else
+
+\def\frontmatter{%
+    \cleardoublepage
+    \@mainmatterfalse
+    \pagestyle{frontmatter}
+}
+
+\def\mainmatter{%
+    \cleardoublepage
+    \@mainmattertrue
+    \pagestyle{default}
+}
+
+\def\backmatter{%
+    \if@openright
+      \cleardoublepage
+    \else
+      \clearpage
+    \fi
+    \@mainmatterfalse
+    \pagestyle{backmatter}
+}
+
+\preto{\appendix}{
+	% fixes links to appendix chapters
+	\renewcommand{\theHchapter}{A\arabic{chapter}}
+}
+
+\appto{\appendix}{
+	\pagestyle{appendix}
+}
+
+\addtolang{slovak}{\renewcommand{\appendixname}{Príloha}}
+
+\fi % noredefmatter
+
+\fi % pagelayout
+\makeatother
+
+%-----------------------------------------------------------
+%    An environment for setting aligned text; based on
+%	 tabular, but with corrected vertical spacing.
+%-----------------------------------------------------------
+
+\newenvironment{alignedtext}[1]{
+\begingroup
+\newcounter{rowno}
+\setcounter{rowno}{0}
+\begin{minipage}[b][\therowno\baselineskip-\parskip]{\textwidth}\begin{tabular}[b]{@{\stepcounter{rowno}}#1}
+}{\end{tabular}
+\end{minipage}\endgroup}
+
+%-----------------------------------------------------------
+%			Automatic line balancing (useful for
+%			titles and such).
+%-----------------------------------------------------------
+
+\def\balancedcenter{
+	\centering
+	\parfillskip=0pt
+	\leftskip=0pt plus .3\textwidth
+	\rightskip=0pt plus .3\textwidth
+	\emergencystretch=.3\textwidth
+}
+
+\def\balancedleft{
+	\parfillskip=0pt
+	\rightskip=0pt plus .5\textwidth
+	\emergencystretch=.3\textwidth
+}
+
+\def\balancedright{
+	\parfillskip=0pt
+	\leftskip=0pt plus .5\textwidth
+	\emergencystretch=.3\textwidth
+}
+
+% minipage with corrected vertical spacing
+\usepackage{environ}
+
+\makeatletter
+\newlength{\uniza@saveparindent}
+\AtBeginDocument{\setlength{\uniza@saveparindent}{\parindent}}
+\newsavebox{\uniza@alignedbox}
+
+\NewEnviron{alignedpage}[2][t]{
+  \savebox{\uniza@alignedbox}{%
+    \parbox[#1]{#2}{%
+      \setlength{\parindent}{\uniza@saveparindent}%
+      \BODY\par\xdef\uniza@savedprevdepth{\the\prevdepth}%
+    }%
+  }%
+  \begin{minipage}[#1]{#2}%
+  \BODY%
+  \end{minipage}% an intentional blank line:
+  
+  \prevdepth\uniza@savedprevdepth%
+  \vspace{-\parskip}%
+}
+\makeatother
+
+%-----------------------------------------------------------
+%                   Signature box macro
+%-----------------------------------------------------------
+
+\newcommand*{\SignatureBox}[2][2.2in]{%
+	\par\noindent\makebox[#1]{\hrulefill}%
+	\par\noindent\makebox[#1][c]{#2}%
+}%
+
+\endinput

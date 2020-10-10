@@ -1,0 +1,200 @@
+% !TeX spellcheck = sk_SK
+% LaTeX document class
+\documentclass[nominted]{uniza}
+
+%-------------------------------------------------------
+%             Abbreviation and term database
+%-------------------------------------------------------
+\input{modules/abbterms.tex}
+
+%-------------------------------------------------------
+%            Súbory s bibliografickými informáciami
+%-------------------------------------------------------
+\addbibresource{bibliography.bib}
+
+%-------------------------------------------------------
+%                  Jazykové nastavenia
+%-------------------------------------------------------
+\usepackage[english,slovak]{babel}
+
+%-------------------------------------------------------
+%                Informácie o dokumente
+%-------------------------------------------------------
+
+\title{Názov práce}
+\subtitle{Podnázov práce (ak existuje)}
+\author{Titul, meno a priezvisko}
+\keywords{Vložte minimálne 4 kľúčové slová výstižne charakterizujúce spracovanú tému.}
+\keywordsSecLang{Insert the minimum of 4 keywords that accurately characterize your topic.}
+
+\keywordsName{Kľúčové slová}
+\keywordsNameSecLang{Keywords}
+
+\faculty{Elektrotechnická fakulta}
+\department{Katedra riadiacich a informačných systémov}
+
+% školiace pracovisko, ak je iné než katedra:
+%\supervisorinst{
+%	SIEMENS\\
+%	Kompetenčné centrum Žilina
+%}
+
+\facultyshort{EF}
+\location{Žilina}
+
+\doctype{Diplomová práca}
+\docid{Evidenčné číslo práce}
+\supervisor{Titul, vedúci práce}
+%Meno konzultanta (ak existuje):
+\consultant{Titul, konzultant práce}
+
+\academicyear{2017/2018} % akademický rok
+\submissionyear{2018} % rok odovzdania práce
+% Študijný program:
+\studyprogramme{Riadenie procesov}
+% Študijný odbor:
+\fieldofstudy{5.2.14 Automatizácia}
+
+% Abstrakt v hlavnom jazyku
+\abstract{Abstrakt}{
+Abstrakt obsahuje informáciu o cieľoch práce, jej stručnom obsahu a v závere abstraktu sa charakterizuje splnenie cieľa, výsledky a význam celej práce. Abstrakt sa píše súvisle ako jeden odsek a jeho rozsah je spravidla 100 až 500 slov.
+}
+
+% Abstrakt v cudzom jazyku (anglickom, nemeckom, ...)
+\abstractSecLang{Abstract}{
+In this place insert the text of the abstract in English or another foreign language. Sem vložte text abstraktu v angličtine, prípadne v inom cudzom jazyku.
+}
+
+\date{Dátum odovzdania práce}
+
+\acknowledgements{
+	Poďakovanie nie je povinné. Ak nemá byť zahrnuté, stačí túto časť zakomentovať.
+}
+
+%-------------------------------------------------------
+%		 Vybrané metadáta zapíšeme aj do dokumentu.
+%-------------------------------------------------------
+
+\hypersetup{
+	pdfauthor={\Author},%
+    pdftitle={\Title},%
+    pdfsubject={\Doctype},%
+    pdfkeywords={\Keywords},%
+    pdfproducer={LaTeX},%
+%    pdfcreator={pdfLaTeX}
+}
+
+%-------------------------------------------------------
+%						Includeonly
+%-------------------------------------------------------
+
+%\includeonly{
+%kap_uvod
+%}
+
+%-------------------------------------------------------
+%		Korektné zalamovanie spojok na konci riadku.
+%-------------------------------------------------------
+\usepackage{encxvlna}
+% a temporary workaround for encxvlna breaking multiarg macros
+\mubyte { {\endmubyte
+
+%-------------------------------------------------------
+%					Začiatok dokumentu
+%-------------------------------------------------------
+
+\begin{document}
+
+%-------------------------------------------------------
+%				 Obálka a titulná strana
+%-------------------------------------------------------
+
+\makecover
+\maketitle
+
+%-------------------------------------------------------
+%						 Zadanie
+%-------------------------------------------------------
+
+\includepdf[fitpaper]{modules/zadanie.pdf}
+
+%-------------------------------------------------------
+%				Front Matter (TOC, LOF, ...)
+%-------------------------------------------------------
+\frontmatter
+
+% suppress some commands in TOC and lists
+\begingroup
+\renewcommand{\ac}[1]{#1}
+\renewcommand{\cite}[1]{}
+
+% Poďakovanie
+\makeacknowledgements
+
+% Abstrakt, anotácia
+\makeabstract
+
+%  TOC
+\tableofcontents
+
+% list of figures
+\iftotalfigures\listoffigures\fi
+
+% list of tables
+\iftotaltables\listoftables\fi
+
+% list of abbreviations
+\acsetup{page-ref=comma,list-style=acronyms
+}{
+	\ifargoutempty{\printacronyms[include-classes=abbrev,heading=none]}{}{
+		\unchapter{Zoznam skratiek}
+		\argoutemptyFirstArg
+	}
+}
+
+% dictionary
+\acsetup{page-ref=none,list-style=dictstyle,extra-style=plain,extra-format={\;},only-used=false}{
+\ifargoutempty{\printacronyms[include-classes=dict,heading=none]}{}{
+	\unchapter{Slovník pojmov}
+	\setlength{\columnseprule}{0.2pt}
+	\setlength{\columnsep}{1.25cm}
+	\begin{multicols}{2}
+	\argoutemptyFirstArg
+	\end{multicols}
+}}
+
+\endgroup % suppress some commands in TOC and lists
+
+%-------------------------------------------------------
+%						Document
+%-------------------------------------------------------
+\mainmatter
+
+\include{kap_uvod}
+\include{kap_sablona}
+\include{kap_latex}
+\include{kap_citacie}
+\include{kap_typografia}
+
+%-------------------------------------------------------
+%                     Bibliography
+%-------------------------------------------------------
+
+\printbibliography[heading=unchapter,title={Zoznam použitej literatúry}]
+
+%-------------------------------------------------------
+%					Čestné vyhlásenie
+%-------------------------------------------------------
+
+\makeDeclaration
+
+%-------------------------------------------------------
+%						Appendix
+%-------------------------------------------------------
+
+\makeAppendixPage
+\appendix
+
+\include{priloha1}
+
+\end{document}

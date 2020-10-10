@@ -1,0 +1,68 @@
+% !TeX spellcheck = sk_SK
+\chapter{Typografia dokumentu}
+
+V tejto časti špecifikujeme aj explicitne aspoň základné informácie o tom, ako je dokument štýlovaný. Okrem toho pripomenieme niektoré základné typografické zásady, ako je správne používanie spojovníkov, pomlčiek, medzier a pod.
+
+\section{Štýl dokumentu}
+
+Celý dokument využíva font v štýle Times New Roman -- konkrétne používame LaTeX balíčky \texttt{newtxtext} a \texttt{newtxmath}. Na realizáciu písma v štýle písacieho stroja (makro \texttt{{\textbackslash}texttt}) používame font \texttt{lmvtt}.
+
+\subsection{Štýlovanie odsekov}
+
+Všetky základné odseky používajú riadkovanie $\num{1.5}$. V LaTeX-u sa označuje ako dvojité riadkovanie (\angl{double spacing}). V niektorých špeciálnych kontextoch (ako poznámky pod čiarou a pod.) sa používa jednoduché riadkovanie.
+
+Prvý riadok odsekov je odsadený zľava. Výnimku tvoria odseky nasledujúce priamo po nadpise -- tie nie sú odsadené.
+
+\subsection{Štýlovanie strán}
+
+Bežné strany v dokumente majú záhlavie a pätu. Záhlavie obsahuje nadpis aktuálnej kapitoly prvej úrovne. Päta obsahuje číslo strany.
+
+Okraje strán sú nastavené nasledovne:
+\begin{itemize}
+\item horný okraj: $\num{11.25}$cm;
+\item dolný okraj: $\num{1.5}$cm;
+\item ľavý okraj: $\num{3}$cm;
+\item pravý okraj: $\num{2.5}$cm.
+\end{itemize}
+
+Výška záhlavia strany je $1$cm, odstup medzi záhlavím strany a hlavným textom je $\num{0.75}$cm. Rozostup medzi spodnou hranicou hlavného textu a spodnou hranicou päty strany je $1$cm.
+
+Osobitné formátovanie majú strany, na ktorých začína nová kapitola (prvej úrovne). Nová kapitola začína vždy na novej strane -- veľkým nadpisom. Preto tieto strany nemajú záhlavie, ktoré by predstavovalo zbytočnú duplicitu.
+
+Odlišný formát majú aj strany v úvodnej (obsah, abstrakt, anotácia, zoznamy obrázkov a tabuliek, ...) a záverečnej časti práce (prílohová časť, ...) -- líšia sa predovšetkým číslovaním strán. V úvode sú strany číslované malými rímskymi číslami a v závere veľkými rímskymi číslami.
+
+\section{Typografické zásady}
+\label{sec:typograficke_zasady}
+
+% Tu sú zámerne dva nadpisy tesne za sebou ako príklad.
+
+\subsection{Spojovníky a pomlčky}
+\label{sec:spojovniky_pomlcky}
+
+Pripomíname, že spojovník \enquote{-} sa píše vždy vo vnútri slova a neoddeľuje sa medzerami, napr. čierno-biely (t.j. skladajúci sa z čiernej a z bielej časti).
+
+Pomlčkami sa oddeľujú časti textu vo vete -- napr. môžu slúžiť na vkladanie poznámok, ako to ilustrujeme tu -- nepoužívajú sa vo vnútri slov. Pomlčka \enquote{--} je dlhšia než spojovník a z obidvoch strán sa oddeľuje medzerami. V LaTeX-u sa pomlčka píše pomocným zápisom \enquote{{-}{-}} -- každý výskyt tohto zástupného symbolu LaTeX nahradí regulárnou pomlčkou.
+
+V iných jazykoch, napr. v angličtine, sa niekedy používa ešte dlhšia pomlčka \enquote{---}, ktorá má podobnú funkciu ako klasická pomlčka a typicky sa neoddeľuje medzerami. V slovenčine sa tento typ pomlčky typicky nepoužíva.
+
+\subsection{Písanie medzier}
+
+Na pripomenutie pre istotu uvádzame aj, že medzery sa nikdy nepíšu pred bodkou, čiarkou, bodkočiarkou, dvojbodkou a pod., ale len za nimi.
+
+V slovenskej typografii sa píše medzera aj medzi číslami a označením jednotiek, resp. číslami a znakom percent \%, napr.:
+\begin{itemize}
+\item 22 cm;
+\item 75 \%.
+\end{itemize}
+V angličtine sú pravidlá odlišné.
+
+Medzery sa zvyknú písať aj pri udávaní rozsahov (napr. rokov alebo strán):
+\begin{itemize}
+\item s. 112 -- 125;
+\item v rokoch 1928 -- 1932.
+\end{itemize}
+Tejto konvencie sa však nepridŕžajú všetci -- možno aj s ohľadom na to, že v českej typografii sa v týchto prípadoch medzery používať nezvyknú. Výnimku tvoria aj rozsahy strán v bibliografických záznamoch podľa normy ISO, ktoré sa píšu bez medzier.
+
+\subsection{Viacero nadpisov za sebou}
+
+Treba sa pridŕžať konvencie, že v texte by nemalo nasledovať viacero nadpisov bezprostredne za sebou -- ako to vidno vyššie, na nadpisoch \ref{sec:typograficke_zasady} a \ref{sec:spojovniky_pomlcky}. Za prvým nadpisom by namiesto toho mohlo nasledovať napríklad niekoľko viet stručne charakterizujúcich obsah danej podkapitoly.

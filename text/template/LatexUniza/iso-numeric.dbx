@@ -1,0 +1,11 @@
+\ProvidesFile{iso-numeric.dbx}[2017/04/25 v0.3.2 biblatex data model extension]
+\RequireBiber[3]
+% for thesis supervisors
+\DeclareDatamodelFields[type=list,datatype=name]{supervisor}
+\DeclareDatamodelEntryfields{supervisor}
+% for citation database tagging
+\DeclareDatamodelFields[type=list,datatype=literal]{citdb}
+\DeclareDatamodelEntryfields{citdb}
+% the library code (AFC, AFD, ...)
+\DeclareDatamodelFields[type=field,datatype=literal]{ukzu}
+\DeclareDatamodelEntryfields{ukzu}

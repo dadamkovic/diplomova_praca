@@ -1,0 +1,116 @@
+% !TeX spellcheck = hyph_sk_SK
+\pdfminorversion=4
+\documentclass[10pt,t]{beamer}
+\usepackage[beamer]{uniza_utils}
+
+% shownavsym - shows the navigation menu
+\usetheme[shownavsym]{UNIZA}
+
+%-----------------------------------------------------------
+%                     Encoding
+%-----------------------------------------------------------
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+
+%-----------------------------------------------------------
+%               	Bibliography
+%-----------------------------------------------------------
+
+\usepackage[style=iso-numeric]{biblatex}
+	
+\appto{\bibsetup}{\sloppy}
+\renewcommand*{\bibfont}{\footnotesize}
+
+\setcounter{biburllcpenalty}{7000}
+\setcounter{biburlucpenalty}{8000}
+	
+%-----------------------------------------------------------
+%            Súbory s bibliografickými informáciami
+%-----------------------------------------------------------
+
+\addbibresource{bibliography.bib}
+  
+% If you want to change the colors of the various elements in the theme, edit and uncomment the following lines
+% Change the bar and sidebar colors:
+%%\setbeamercolor{AAUsimple}{fg=red!20,bg=red}
+%\setbeamercolor{sidebar}{bg=red!20}
+% Change the color of the structural elements:
+%\setbeamercolor{structure}{fg=red}
+% Change the frame title text color:
+%\setbeamercolor{frametitle}{fg=blue}
+% Change the normal text color background:
+%\setbeamercolor{normal text}{fg=black,bg=gray!10}
+% ... and you can of course change a lot more - see the beamer user manual.
+
+% laguage
+\usepackage[slovak]{babel}
+\graphicspath{{images/}}
+% beamer localization
+\languagepath{Slovak}
+
+\title{Titul prezentácie}
+\subtitle{-- podtitul prezentácie --}  % could also be a conference name
+\date{\today}
+
+\author{
+  Prvý Autor, Druhý Autor \\
+  \url{{prvy.autor,druhy.autor}@fel.uniza.sk} \\
+}
+
+\institute[UNIZA] % optional - is placed in the bottom of the sidebar on every slide
+{% is placed on the bottom of the title page
+  Názov fakulty / katedry \\[0.75em]
+  \textsc{Žilinská univerzita}
+}
+
+\newcommand{\logoimage}{logo}
+
+\newcommand{\introimage}{
+\includegraphics[width=4.5cm]{logo}
+}
+
+\begin{document}
+
+% the titlepage
+{\introbg%
+\begin{frame}[plain,noframenumbering] % the plain option removes the header from the title page
+
+\renewcommand{\titletextcolwidth}{0.6\textwidth}
+\renewcommand{\titleimagecolwidth}{0.4\textwidth}
+
+  \titlepage
+\end{frame}}
+
+% TOC
+\begin{frame}{Prehľad}
+\tableofcontents
+\end{frame}
+
+\section{Kapitola}
+
+\begin{frame}{\secname}
+\begin{itemize}
+\item Odkaz \cite{Ackley1985}.
+\end{itemize}
+\end{frame}
+
+\subsection{Podkapitola}
+
+\begin{frame}{\subsecname}{\secname}
+
+
+\end{frame}
+
+%{\introbg
+%\begin{frame}[plain,noframenumbering]
+%  \finalpage{Thank you for your attention!}
+%\end{frame}}
+
+\section{Zdroje}
+
+\begin{frame}[allowframebreaks]{\secname}
+\printbibliography[title={Zoznam použitej literatúry}]
+\end{frame}
+
+\end{document}

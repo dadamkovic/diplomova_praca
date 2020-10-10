@@ -1,0 +1,94 @@
+% !TeX spellcheck = sk_SK
+\chapter{Postup práce so šablónou}
+
+Šablóna pre LaTeX obsahuje všetko potrebné na vygenerovanie PDF verzie záverečnej práce v predpísanom formáte. Ako ju teda použiť? Všetky základné informácie potrebné na prácu s ňou predstavíme v tejto kapitole. Diskusiu začneme tým, ako je šablóna štruktúrovaná. Potom zhrnieme ako vyplniť potrebné metadáta o dokumente a ako písať obsah jadra práce. Následne prejdeme k tomu, aké softvérové prostredie je potrebné, aby sme dokázali prácu skompilovať do podoby finálneho PDF dokumentu.
+
+\section{Štruktúra šablóny}
+
+Dokumenty pre LaTeX sa skladajú z viacerých súborov, ktoré nie sú zabalené do jedného archívu ako to býva pri dokumentoch pre Microsoft Word, LibreOffice alebo pre podobné softvérové produkty. Podobajú sa viac na zdrojové kódy programu než na klasický dokument.
+
+Naša šablóna má nasledujúcu štruktúru:
+\begin{itemize}
+\item Súbor \textbf{\texttt{main.tex}} je hlavným súborom šablóny. Definujú sa v ňom základné metadáta dokumentu a include-ujú sa z neho súbory jednotlivých kapitol.
+
+\item Jednotlivé kapitoly dokumentu sú v osobitných súboroch. Názvy súborov u nás začínajú predponou \textbf{\texttt{kap\_}} -- čisto kvôli prehľadnosti.
+
+\item Bibliografické údaje o citovaných publikáciách sú v špeciálnom BibTeX súbore s názvom \textbf{\texttt{bibliography.bib}}.
+
+\item Súbory \textbf{\texttt{iso.bbx}}, \textbf{\texttt{iso-fullcite.cbx}}, \textbf{\texttt{iso-numeric.bbx}}, \textbf{\texttt{iso-numeric.cbx}} a\ \textbf{\texttt{slovak.lbx}} definujú citačný štýl.
+
+\item Súbor \textbf{\texttt{style.sty}} definuje štýl dokumentu a niektoré pomocné makrá, ktoré používame.
+
+\item Súbor \textbf{\texttt{makepdf.sh}} je pomocný skript, ktorý ukazuje ako možno vykompilovať dokument z príkazového riadku. Vykompilovaný dokument aj pomocné súbory sa kvôli prehľadnosti ukladajú do pomocného priečinka \texttt{auxfiles} -- inak by sa miešali so zdrojovými súbormi.
+\end{itemize}
+
+Používame nasledujúce podadresáre:
+\begin{itemize}
+\item \textbf{\texttt{images}} -- obsahuje obrázky,
+\item \textbf{\texttt{listings}} -- obsahuje zdrojové kódy,
+\item \textbf{\texttt{modules}} -- obsahuje pomocné súbory, prípadne celé strany, ktoré treba niekam vložiť.
+\end{itemize}
+
+Súbor \texttt{modules/abbterms.tex} obsahuje databázu pojmov a skratiek -- viac informácií o ňom možno nájsť v časti \ref{sec:skratky}.
+
+\section{Metadáta o dokumente}
+
+V súbore \texttt{main.tex} sa definujú rôzne metadáta dokumentu -- na prvom mieste meno autora a názov práce, ale aj abstrakt, anotácia, dátum odovzdania práce a pod. Keď sa všetky tieto informácie vyplnia, automaticky sa z nich vygeneruje titulná strana, anotačný záznam atď.
+
+\section{Kompilácia dokumentu}
+
+Pri kompilácii dokumentu môžeme postupovať dvojako -- buď použijeme lokálnu inštaláciu LaTeX-u alebo zvolíme cloudové riešenie a na dokumente budeme pracovať nie lokálne, ale prostredníctvom webového rozhrania. Začnime druhou možnosťou -- keďže tá si nevyžaduje lokálnu inštaláciu žiadneho softvéru.
+
+\subsection{Cloudové riešenie -- služba Overleaf}
+
+Jednou možnosťou pri kompilácii LaTeX-ových dokumentov je použiť cloudové riešenie -- napríklad služby Overleaf: \href{https://www.overleaf.com/}{overleaf.com}. Po registrácii dostane užívateľ k dispozícii priestor kam môže uploadovať svoje dokumenty, pracovať na nich, kompilovať ich do formátu PDF atď. Služba Overleaf umožňuje aj vytváranie rôznych verzií dokumentu a má rozhranie pre git. Hlavnou výhodou cloudového riešenia však je, že lokálne nie je potrebné nič inštalovať. Na druhej strane, naša skúsenosť je, že kompilácia pomocou služby Overleaf trvá pomerne dlho.
+
+\subsubsection{Limitovaný počet súborov}
+
+Jedným dosť nepríjemným obmedzením služby Overleaf (iné analogické služby sú na tom podobne) je limit na počet súborov v projekte. V neplatenej verzii služby je to 50, čo je veľmi nízky počet, ak vezmeme do úvahy, že napríklad každý obrázok je v osobitnom súbore. Aj v najvyššej verzii služby je možné v tom istom projekte mať len 1000 súborov, čo v prípade rozsiahlejších publikácií nemusí ani zďaleka stačiť.
+
+\subsection{Lokálna inštalácia -- balík TeXLive}
+
+Ďalšou možnosťou je použiť lokálnu inštaláciu LaTeX-u. Nevýhodou je, že inštalácie bývajú pomerne veľké a sťahujú sa po jednotlivých balíčkoch, čo zvykne trvať dosť dlho. Výhodou je, že lokálna inštalácia je lepšie konfigurovateľná a neaplikujú sa v nej podobné obmedzenia ako v prípade služby Overleaf -- napr. obmedzenie na počet súborov.
+
+Jednou z populárnych distribúcií LaTeX-u je distribúcia TeX Live. Na Linux-e je ju typicky možné nájsť v balíčkovom systéme. Na Windows-e je možné zase použiť jednoduchý grafický inštalátor, ktorý možno stiahnuť na \href{https://www.tug.org/texlive/}{tug.org/texlive/}.
+
+\section{Encxvlna a správne zalamovanie}
+
+Slovenská typografia je charakteristická jednou mierne excentrickou požiadavkou -- že niektoré predložky a spojky nesmú byť na konci riadku. Ak sa tam vyskytnú, musia sa už zalomiť do nasledujúceho riadku. Na realizáciu tejto funkcionality v LaTeX-u je potrebné použiť balíček \texttt{encxvlna}. Drobná komplikácia spočíva v tom, že tento balíček vyžaduje aktiváciu systému \texttt{enctex}.
+
+V inštalácii TeXLive je možné \texttt{enctex} aktivovať buď pre užívateľa alebo pre celý systém. V oboch prípadoch je na to potrebné vytvoriť súbor s názvom \texttt{fmtutil.cnf}, ktorý bude obsahovať:
+\begin{Verbatim}
+pdflatex pdftex language.dat -enc -translate-file=cp227.tcx *pdflatex.ini
+\end{Verbatim}
+Kľúčová je časť \texttt{-enc}, ktorá hovorí, že sa má povoliť \texttt{enctex}.
+
+\subsection{Aktivácia \texttt{enctex}-u pre užívateľa}
+
+V prípade aktivácie pre užívateľa je súbor \texttt{fmtutil.cnf} potrebné umiestniť do domovského adresára užívateľa, na cestu \texttt{texmf/web2c}.
+
+Následne treba z príkazového riadku spustiť príkaz:
+\begin{Verbatim}
+fmtutil -user --all
+\end{Verbatim}
+ktorý nanovo prekompiluje užívateľské LaTeX formáty tak, že príkaz pdflatex bude mať aktivovaný \texttt{enctex}.
+
+\subsection{Aktivácia \texttt{enctex}-u pre celý systém}
+
+V prípade aktivácie pre celý systém sa súbor \texttt{fmtutil.cnf} umiestni do adresára LaTeX-ovej inštalácie, na cestu \texttt{texmf-local/web2c}. Následne je znovu potrebné prekompilovať LaTeX formáty, lenže systémové. Používa sa na to príkaz:
+\begin{Verbatim}
+fmtutil -sys --all
+\end{Verbatim}
+Keďže príkaz modifikuje systémovú inštaláciu, môže byť potrebné spustiť ho s administrátorskými privilégiami. Napr. na Ubuntu sa to dosiahne pomocou príkazu \texttt{sudo}.
+
+\subsection{Overleaf a \texttt{enctex}}
+
+V systéme Overleaf nie je enctex možné aktivovať -- preto na kompiláciu dokumentu je potrebné zakomentovať riadok \texttt{\textbackslash{usepackage}\{encxvlna\}} v \texttt{main.tex}.
+
+\section{Includeonly}
+
+V prípade rozsiahlejšieho dokumentu môže kompilácia do PDF trvať neprimerane dlho. Preto je užitočné niekedy dokument prestaviť tak, aby sa generovala len nejaká jeho menšia časť -- typicky jedna kapitola. To by však mohlo poškodiť odkazy na iné kapitoly, zmeniť číslovanie strán a pod. -- takže vygenerovaná kapitola by vyzerala inak než bude vyzerať vo finálnom texte.
+
+Preto existuje prostredie \texttt{includeonly}, v rámci ktorého sa dá zadefinovať, z ktorých \texttt{.tex} súborov vložených pomocou makra \texttt{include} sa má aktuálne generovať. Pomocné súbory vygenerované z ostatných \texttt{.tex} súborov sú však stále k dispozícii a preto sa dajú čísla strán, odkazy a všetko ostatné v aktuálnom PDF realizovať korektne -- presne v takom tvare, ako to bude aj vo finálnej verzii.
+
+Prostredie \texttt{includeonly} je už pripravené v súbore \texttt{main.tex} -- stačí ho odkomentovať a vložiť názvy tých súborov, z ktorých sa má aktuálne generovať PDF.

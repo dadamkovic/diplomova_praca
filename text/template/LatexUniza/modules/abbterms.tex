@@ -1,0 +1,56 @@
+% !TeX spellcheck = sk_SK
+
+%----------------------------------------------------------
+%						Slovník
+%----------------------------------------------------------
+
+\DeclareAcronym{viskozita} {
+	short = Viskozita,
+	long = {Fyzikálna veličina, miera odporu tekutiny deformovať sa pod vplyvom šmykových (tangenciálnych) napätí. Prejavuje sa vnútorným trením.},
+	class = dict
+}
+
+\DeclareAcronym{zhlukovanie} {
+	short = Zhlukovanie,
+	long = {Trieda metód strojového učenia, ktoré v daných dátach hľadajú zhluky.},
+	extra = {\begin{subdict}
+			\item[Hierarchické zhlukovanie] Metódy zhlukovania, kde rozdelenie do zhlukov má hierarchickú štruktúru.
+			\item[Fuzzy c-means zhlukovanie] Verzia algoritmu k-means pre fuzzy zhlukovanie.
+		\end{subdict}
+	},
+	class = dict
+}
+
+\DeclareAcronym{triedenie} {
+	short = Triedenie,
+	long = {Pojmy v slovníku sa automaticky triedia podľa abecedy. \hl{Ale pozor: triedenie sa deje prvého argumentu makra \texttt{DeclareAcronym} -- nie podľa poľa \texttt{short}.}},
+	class = dict
+}
+
+\DeclareAcronym{slovnik_pojmov} {
+	short = Slovník pojmov,
+	long = {\hl{Slovník pojmov je nepovinný. Na jeho odstránenie stačí zmazať všetky zadefinované pojmy v súbore modules/abbterms.tex.}},
+	class = dict
+}
+
+%----------------------------------------------------------
+%						Skratky
+%----------------------------------------------------------
+
+\DeclareAcronym{MAE} {
+	short = MAE,
+	long = stredná absolútna chyba (\angl{mean absolute error}),
+	class = abbrev
+}
+
+\DeclareAcronym{ANN} {
+	short = ANN,
+	long = umelá neurónová sieť (\angl{artificial neural network}),
+	class = abbrev
+}
+
+\DeclareAcronym{MLP} {
+	short = MLP,
+	long = {viacvrstvový perceptrón, viacvrstvová neurónová sieť (\angl{multi-layer perceptron})},
+	class = abbrev
+}

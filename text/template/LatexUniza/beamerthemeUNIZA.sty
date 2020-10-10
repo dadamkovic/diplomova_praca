@@ -1,0 +1,20 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerthemeUNIZA}[14/10/2015 The University of Zilina Theme]
+
+%-----------------------------------------------
+%					Options
+%-----------------------------------------------
+
+\DeclareOptionBeamer{shownavsym}{\PassOptionsToPackage{shownavsym}{beamerouterthemeUNIZA}}
+%\DeclareOptionBeamer{optionname}{\PassOptionsToPackage{optionname}{packagename}}
+\ProcessOptionsBeamer
+
+% for all except the article mode
+\mode<presentation>
+
+\usecolortheme{UNIZA}
+\usefonttheme{UNIZA}
+\useinnertheme{UNIZA}
+\useoutertheme{UNIZA}
+
+\mode<all>

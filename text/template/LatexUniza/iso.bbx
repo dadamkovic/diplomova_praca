@@ -1,0 +1,503 @@
+\ProvidesFile{iso.bbx}[2017/09/19 v1.0 biblatex ISO style]
+\RequireBibliographyStyle{standard}
+
+% options
+\ExecuteBibliographyOptions{%
+  ,urldate=iso8601
+  ,maxnames=3
+  ,minnames=1
+}
+
+% strings necessary for displaying
+% the supervisor field in theses
+\NewBibliographyString{bysupervisor}
+\DefineBibliographyStrings{english}{%
+   bysupervisor = {Thesis supervisor},
+}
+\DefineBibliographyStrings{slovak}{%
+   bysupervisor = {Ved\'{u}ci pr\'{a}ce}
+}
+\DefineBibliographyStrings{czech}{%
+   bysupervisor = {Vedouc{\'{i}} pr\'{a}ce}
+}
+
+% macro that mark the beginning and end of every entry
+\newbibmacro*{begentry}{}
+\newbibmacro*{finentry}{\finentry\adddot}
+
+% punctuation and delimiters
+\newcommand*\addontitlepunct{\adddot\space}
+\renewcommand*\subtitlepunct{\addspcolon\space}
+\renewcommand\andmoredelim{}
+\renewcommand\multinamedelim{\addspace--\addspace}
+\renewcommand\finalnamedelim{\multinamedelim}
+\renewcommand\andothersdelim{\addspace}
+\renewcommand\intitlepunct{\addspace}
+\def\addhyphen{\printtext{-}}%
+\protected\def\blx@imc@addspcolon{\unspace\blx@addsppunct{colon}}%
+
+\blx@regimcs{% let biblatex know the new macros
+  \addspsemicolon \addspcolon \addcolon \addspcomma }%
+\def\blx@addsppunct#1{% <---- new name for spaced punctuation
+  %\unspace <----- commented out
+  \ifnum\blx@spacefactor<\blx@sf@threshold@low
+    \csuse{blx@qp@#1}\csuse{abx@#1}%
+  \else%
+    \ifnum\blx@spacefactor>\blx@sf@threshold@high
+      \csuse{blx@qp@#1}\csuse{abx@#1}%
+    \else%
+      \ifcsdef{blx@pp@\the\csname blx@sf@#1\endcsname @\blx@spacefactor}%
+        {\csuse{blx@qp@#1}\csuse{abx@#1}}%
+        {\csuse{blx@qp@#1}}%%
+    \fi%
+  \fi%
+  \csuse{blx@pq@#1}}%
+
+% last names are shown in capitals...
+\newcommand\lastnameformat[1]{\MakeUppercase{#1}}
+% ... but only in the actual bibliography
+\AtBeginBibliography{%
+\renewcommand\mkbibnamelast[1]{\lastnameformat{#1}}%
+\renewcommand\mkbibnamefamily[1]{\lastnameformat{#1}}
+}
+
+% The bibliography environment.
+\defbibenvironment{bibliography}
+  {\list%
+     {\MethodFormat}%
+     {}
+     \renewcommand*{\makelabel}[1]{\hss##1}
+  }%
+  {\endlist}%
+  {\item}%
+
+% field formats
+\DeclareFieldFormat*{title}{#1}
+\DeclareFieldFormat*{subtitle}{#1}
+\DeclareFieldFormat*{chapter}{#1}
+\DeclareFieldFormat*{pagetotal}{#1}
+\DeclareFieldFormat*{number}{\bibsstring{number}\space#1}
+\DeclareFieldFormat*{emphatize}{\emph{#1}}
+\DeclareFieldFormat{type}{\ifbibstring{#1}{\bibstring{#1}}{\MakeCapital{#1}}}
+\DeclareFieldFormat*{edition}{%
+  \ifnumeral{#1}%
+  {\mkbibordedition{#1}\addnbspace\bibsstring{edition}}%
+  {\MakeCapital{#1}}
+}
+\DeclareFieldFormat{journaltitle}{#1}
+\DeclareFieldFormat{booktitle}{#1}
+\DeclareFieldFormat{maintitle}{#1}
+\DeclareFieldFormat{journalsubtitle}{#1}
+\DeclareFieldFormat{booksubtitle}{#1}
+\DeclareFieldFormat{mainsubtitle}{#1}
+
+% url formats
+\DeclareFieldFormat*{url}{\url{#1}}
+\DeclareFieldFormat*{doi}{\url{http://dx.doi.org/#1}}
+\DeclareFieldFormat{urldate}{\printfield{urlyear}\addhyphen\printfield{urlmonth}\addhyphen\printfield{urlday}}%
+
+% bracket formats
+\DeclareFieldFormat{sbrackets}{[#1]}
+\DeclareFieldFormat{rbrackets}{(#1)}
+\DeclareFieldFormat{abrackets}{$\langle$#1$\rangle$}
+
+% ISBN field with support for multiple entries.
+\DeclareFieldFormat{isbn}{%
+\renewcommand*{\do}[1]{\printtext{ISBN}\addnbspace#1}%
+\docsvfield{isbn}}%
+
+% ISSN field with support for multiple entries.
+\DeclareFieldFormat{issn}{%
+\renewcommand*{\do}[1]{\printtext{ISSN}\addnbspace#1}%
+\docsvfield{issn}}%
+
+% A name format which uses the family name and the initial of the given name.
+\DeclareNameFormat{family-giveninits}{%
+	\nameparts{#1}%
+	\usebibmacro{name:family-given}%
+      {\namepartfamily}%
+      {\namepartgiveni}%
+      {\namepartprefix}%
+      {\namepartsuffix}%
+  \usebibmacro{name:andothers}%
+}%
+
+%% By default, we use the family name, followed
+%% by the initials of the given name.
+\DeclareNameAlias{default}{family-giveninits}
+% For supervisors, we instead use the full given name and the full family name.
+\DeclareNameAlias{supervisor}{given-family}
+
+% The date of publication.
+\newbibmacro*{date}{%
+  \iffieldundef{date}%
+  {\printfield{year}}%
+  {\printfield{date}}%
+}%
+
+% The basic info about the publication.
+\newbibmacro*{pubinfo}{%
+  \let\krbbl@onepresent\relax%
+  \iflistundef{location}{}{\printlist{location}\def\krbbl@onepresent{}}%
+  \iflistundef{publisher}{}{%
+    \def\krbbl@onepresent{}%
+    \iflistundef{location}{}{\setunit{\addcolon\addspace}}%
+    \printlist{publisher}%
+  }%
+  \newunit%
+  \@ifundefined{krbbl@onepresent}{}{\setunit{\addcomma\addspace}}%
+  \usebibmacro{date}%
+}%
+
+% Info about volume and number. Arg #1 should be either
+% volume, or jourvol, depending on the type of entry.
+\newbibmacro*{vol_num}[1]{%
+  \setunit*{\addcomma\addspace}%
+  \iffieldundef{volume}{}{\bibsstring{#1}\space\printfield{volume}}%
+  \setunit*{\addcomma\addspace}%
+  \printfield{number}%
+}%
+
+% Primary authorship.
+\newbibmacro*{authorship:primary}{\printnames{author}}%
+
+% Secondary authorship.
+\newbibmacro*{authorship:secondary}{%
+  \bgroup%
+  \renewcommand{\lastnameformat}{}%
+  \usebibmacro{editor}%
+  \newunit%
+  \ifnameundef{translator}{}{%
+    \bibsstring{translator} \printnames{translator}%
+  }%
+  \egroup%
+}%
+
+% Location of the cited part in the book.
+\newbibmacro*{inbook_loc}{%
+  \iffieldundef{chapter}{}{
+    \bibsstring{chapter}
+    \printfield{chapter}
+    \newunit
+    \setunit{\addcomma\addspace}
+  }
+  \printfield{pages}
+}%
+
+% A macro that either prints the localized editor string, or else
+% the editortype field if it is specified.
+\newbibmacro*{editorrole}{%
+  \iffieldundef{editortype}{\bibsstring{editor}}{\bibsstring{\thefield{editortype}}}%
+}%
+
+% Name(s) of the editor(s).
+\renewbibmacro*{editor}{%
+  \ifnameundef{editor}{}%
+  {\usebibmacro{editorrole} \addspace \printnames{editor}%
+  }%
+}%
+
+% Expands to #1 if none of url, eprint and doi are defined and to to #2 otherwise.
+\newbibmacro*{online-test}[2]{%
+  \ifboolexpr{%
+    test {\iffieldundef{url}}%
+    and%
+    test {\iffieldundef{eprint}}%
+    and%
+    test {\iffieldundef{doi}}%
+  }%
+  {#1}%
+  {#2}%
+}%
+
+% Date of citation for online sources.
+\newbibmacro*{urldate}{%
+  \iffieldundef{urlyear}{}%
+  {\addspace\printtext[rbrackets]{%
+    \bibsstring{urlseen}%
+    \addspace%
+    \printurldate%
+  }}%
+}%
+
+% Displays the information about URL, citation date, etc.
+\newbibmacro{print-online}{%
+  \usebibmacro{online-test}{}{%
+    \MakeUppercase{\bibsstring{url}}\addcolon\addspace%
+  \printtext[abrackets]{%
+      \iffieldundef{url}{%
+        \printfield{doi}%
+        \printfield{eprint}%
+      }%
+      {\printfield{url}}%
+    }%
+    \usebibmacro{urldate}%
+  }%
+}%
+
+% Displays the howpublished field.
+\newbibmacro{availability}{%
+  % test for url, eprint and doi fields
+  \usebibmacro{online-test}%
+  {}%
+  {\iffieldundef{howpublished}% when some of them is used
+    {}%
+    {\printtext[sbrackets]{\printfield{howpublished}}}%
+  }%
+}%
+
+% Number of pages.
+\newbibmacro{pagecount}{%
+\iffieldundef{pagetotal}{}%
+{\printfield{pagetotal}\addnbspace\bibsstring{pages}}%
+}%
+
+% a macro used to print tile, subtitle and titleaddon of a certain type
+\newbibmacro{titles}[2]{%
+  \printtext[#2]{%
+    \printfield{#1title}%
+    \setunit{\subtitlepunct}%
+    \printfield{#1subtitle}}%
+    \setunit{\addontitlepunct}%
+    \printfield{titleaddon}}%
+
+% an auxiliary macro
+\newbibmacro{checktitle}[1]{%
+  \iffieldundef{#1title}{}{%
+    \@ifundefined{aux@maintitle}{%
+      \def\aux@maintitle{#1}%
+    }{%
+      \BibliographyWarning{Only one kind of main title is supported. %
+      Ignoring \aux@maintitle title.}%
+    }%
+  }%
+}%
+
+% the tile macro for general publications
+\renewbibmacro{title}{%
+  \let\aux@maintitle\relax%
+  \usebibmacro{checktitle}{main}%
+  \usebibmacro{checktitle}{book}%
+  \usebibmacro{checktitle}{journal}%
+  %
+  % if title is undefined, we try to use some main title in its place
+  \iffieldundef{title}{%
+    \@ifundefined{aux@maintitle}{}{%
+    \usebibmacro{titles}{\aux@maintitle}{emphatize}%
+    }%
+  }{%
+    % if only title is defined, we print the entry as a standalone
+    \@ifundefined{aux@maintitle}{%
+      \usebibmacro{titles}{}{emphatize}%
+    }{%
+    % if title is defined and maintitle/booktitle is also defined, we print
+    % the entry as in collection
+    \usebibmacro{titles}{}{}%
+    \newunit\newblock%
+    \bibsstring{in}\addspace%
+    \usebibmacro{titles}{\aux@maintitle}{emphatize}%
+  }%
+  }%
+}%
+
+% the title macro for periodicals: there can only be one title
+\newbibmacro{periodical:title}{%
+  \let\aux@maintitle\relax%
+  \usebibmacro{checktitle}{journal}%
+  \usebibmacro{checktitle}{main}%
+  \usebibmacro{checktitle}{book}%
+  %
+  % if title is defined, we use the title
+  \iffieldundef{title}{%
+    \@ifundefined{aux@maintitle}{}{%
+      \usebibmacro{titles}{\aux@maintitle}{emphatize}%
+    }%
+  }{%
+    \usebibmacro{titles}{}{emphatize}%
+    \@ifundefined{aux@maintitle}{}{%
+      \BibliographyWarning{Only one kind of title can be defined %
+        for a periodical. Ignoring \aux@maintitle title.}%
+    }%
+  }%
+}%
+
+% the title macro for articles: there must be two titles
+\newbibmacro{article:title}{%
+  \let\aux@maintitle\relax%
+  \usebibmacro{checktitle}{journal}%
+  \usebibmacro{checktitle}{main}%
+  \usebibmacro{checktitle}{book}%
+  %
+  % we need two titles to do this correctly
+  \iffieldundef{title}{%
+    \BibliographyWarning{An article needs both: a main (journal) title and a title.}%
+    \@ifundefined{aux@maintitle}{}{%
+      \usebibmacro{titles}{\aux@maintitle}{emphatize}%
+    }%
+  }{%
+    \usebibmacro{titles}{}{}%
+    \@ifundefined{aux@maintitle}{
+      \BibliographyWarning{An article needs both: a main (journal) title and a title.}%
+    }{%
+      \usebibmacro{titles}{\aux@maintitle}{emphatize}%
+      \newunit%
+    }%
+  }%
+}%
+
+% Displays the supervisor field for theses.
+\newbibmacro*{thesissupervisor}{%
+  \bgroup%
+  \ifnameundef{supervisor}
+    {}
+    {\renewcommand{\lastnameformat}{}%
+     \printtext{\biblstring{bysupervisor}}%
+     \addspace%
+     \printnames{supervisor}}
+  \egroup%
+}
+
+% book
+\DeclareBibliographyDriver{book}{%
+\usebibmacro{bibindex}%
+\usebibmacro{begentry}%
+\usebibmacro{authorship:primary}%
+\setunit{\labelnamepunct}\newblock%
+\usebibmacro{title}%
+\newunit%
+\setunit{\addspace}%
+\usebibmacro{availability}%
+\newunit\newblock%
+\usebibmacro{authorship:secondary}%
+\newunit\newblock%
+\usebibmacro{pubinfo}%
+\newunit\newblock%
+\usebibmacro{pagecount}%
+\newunit\newblock%
+\printfield{edition}%
+\newunit\newblock%
+\printfield{series}%
+\newunit\newblock%
+\printfield{type}%
+\newunit%
+\setunit{\addspace}%
+\usebibmacro{vol_num}{volume}%
+\newunit%
+\setunit{\addcomma\addspace}%
+\printlist{institution}%
+\newunit\newblock%
+\usebibmacro{thesissupervisor}
+\newunit\newblock%
+\printfield{note}%
+\newunit\newblock%
+\printfield{isbn}%
+\newunit\newblock%
+\printfield{issn}%
+\newunit\newblock%
+\usebibmacro{print-online}%
+\newunit\newblock%
+\usebibmacro{inbook_loc}%
+\newunit\newblock%
+\setunit{\bibpagerefpunct}\newblock%
+\usebibmacro{pageref}%
+\usebibmacro{finentry}}%
+
+% periodical
+\DeclareBibliographyDriver{periodical}{%
+\usebibmacro{bibindex}%
+\usebibmacro{begentry}%
+\usebibmacro{periodical:title}%
+\newunit%
+\setunit{\addspace}%
+\usebibmacro{availability}%
+\newunit\newblock%
+\usebibmacro{authorship:primary}%
+\setunit{\labelnamepunct}\newblock%
+\usebibmacro{authorship:secondary}%
+\newunit\newblock%
+\usebibmacro{vol_num}{jourvol}%
+\newunit%
+\setunit{\addcomma\addspace}%
+\usebibmacro{inbook_loc}%
+\newunit\newblock%
+\usebibmacro{pubinfo}%
+\newunit\newblock%
+\usebibmacro{pagecount}%
+\newunit\newblock%
+\printfield{edition}%
+\newunit\newblock%
+\printfield{series}%
+\newunit\newblock%
+\printfield{note}%
+\newunit\newblock%
+\printfield{isbn}%
+\newunit\newblock%
+\printfield{issn}%
+\newunit\newblock%
+\usebibmacro{print-online}%
+\newunit\newblock%
+\setunit{\bibpagerefpunct}\newblock%
+\usebibmacro{pageref}%
+\usebibmacro{finentry}}%
+
+% article
+\DeclareBibliographyDriver{article}{%
+\usebibmacro{bibindex}%
+\usebibmacro{begentry}%
+\usebibmacro{authorship:primary}%
+\setunit{\labelnamepunct}\newblock%
+\usebibmacro{article:title}%
+\newunit%
+\setunit{\addspace}%
+\usebibmacro{availability}%
+\newunit\newblock%
+\usebibmacro{authorship:secondary}%
+\newunit\newblock%
+\usebibmacro{vol_num}{jourvol}%
+\newunit%
+\setunit{\addcomma\addspace}%
+\usebibmacro{inbook_loc}%
+\newunit\newblock%
+\usebibmacro{pubinfo}%
+\newunit\newblock%
+\usebibmacro{pagecount}%
+\newunit\newblock%
+\printfield{edition}%
+\newunit\newblock%
+\printfield{series}%
+\newunit\newblock%
+\printfield{note}%
+\newunit\newblock%
+\printfield{isbn}%
+\newunit\newblock%
+\printfield{issn}%
+\newunit\newblock%
+\usebibmacro{print-online}%
+\newunit\newblock%
+\setunit{\bibpagerefpunct}\newblock%
+\usebibmacro{pageref}%
+\usebibmacro{finentry}}%
+
+% aliases
+\DeclareBibliographyAlias{online}{book}
+\DeclareBibliographyAlias{thesis}{book}
+\DeclareBibliographyAlias{report}{book}
+\DeclareBibliographyAlias{incollection}{book}
+\DeclareBibliographyAlias{inbook}{book}
+\DeclareBibliographyAlias{bookinbook}{inbook}
+\DeclareBibliographyAlias{suppbook}{inbook}
+\DeclareBibliographyAlias{booklet}{book}
+\DeclareBibliographyAlias{collection}{book}
+\DeclareBibliographyAlias{suppcollection}{incollection}
+\DeclareBibliographyAlias{manual}{book}
+\DeclareBibliographyAlias{misc}{book}
+\DeclareBibliographyAlias{suppperiodical}{article}
+\DeclareBibliographyAlias{proceedings}{collection}
+\DeclareBibliographyAlias{inproceedings}{incollection}
+\DeclareBibliographyAlias{reference}{collection}
+\DeclareBibliographyAlias{inreference}{incollection}
+\DeclareBibliographyAlias{unpublished}{book}
+\DeclareBibliographyAlias{patent}{book}
+\endinput
+
+% vim: ft=tex
