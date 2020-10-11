@@ -1,0 +1,6 @@
+\begin{figure}
+\centering
+\includegraphics[width=5cm]{logo}
+\caption{Logo elektrotechnickej fakulty.}
+\label{fig:obrazok}
+\end{figure}

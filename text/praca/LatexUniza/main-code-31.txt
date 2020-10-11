@@ -1,0 +1,8 @@
+@MastersThesis{thesis2015,
+  Title                    = {Diaľková preprava záhradných trpaslíkov},
+  Author                   = {Matej Kukár},
+  School                   = {Univerzita makového koláča v Krpeľanoch},
+  Year                     = {2015},
+  Type                     = {diplomová práca},
+  supervisor               = {Vendelín Lopota},
+}

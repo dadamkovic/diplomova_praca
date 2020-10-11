@@ -1,0 +1,15 @@
+\begin{figure}
+\centering
+\begin{minipage}[b]{0.58\textwidth}
+\centering
+\includegraphics[width=\textwidth]{jabref}
+\caption{Prvý obrázok.}
+\label{fig:mini1}
+\end{minipage}\quad
+\begin{minipage}[b]{0.38\textwidth}
+\centering
+\includegraphics[width=\textwidth]{logo}
+\caption{Druhý obrázok.}
+\label{fig:mini2}
+\end{minipage}
+\end{figure}

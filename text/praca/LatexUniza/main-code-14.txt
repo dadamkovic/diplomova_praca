@@ -1,0 +1,5 @@
+Rovnice, ktoré sa majú zobrazovať osobitne, mimo riadku a majú byť číslované, sa dajú vložiť pomocou prostredia \texttt{equation}. Vyzerajú nasledovne:
+\begin{equation}
+x^2 + \alpha,
+\end{equation}
+kde $x$ je premenná a $\alpha$ je konštanta.

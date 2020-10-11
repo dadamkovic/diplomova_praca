@@ -1,0 +1,8 @@
+@TechReport{Moffaert2013report,
+  Title                    = {Efficient Weight Space Search in Multi-Objective Reinforcement Learning},
+  Author                   = {Kristof Van Moffaert and Tim Brys and Ann Now{\'e}},
+  Institution              = {Artificial Intelligence Lab, Vrije Universiteit Brussel},
+  Year                     = {2013},
+  Number                   = {AI-TR-14-69},
+  Type                     = {resreport}
+}

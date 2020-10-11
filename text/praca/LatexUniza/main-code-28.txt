@@ -1,0 +1,9 @@
+@Incollection{floreanoEpuck,
+  Title                    = {E-puck: A Robotic Platform for Studying the Evolution of Communication},
+  Author                   = {Floreano, Dario and Mitri, Sara and Hubert, Julien},
+  Booktitle                = {Evolution of Communication and Language in Embodied Agents},
+  ISBN                     = {978-3-642-01250-1},
+  Publisher                = {Springer},
+  Year                     = {2009},
+  Editor                   = {Stefano Nolfi and Marco Mirolli}
+}

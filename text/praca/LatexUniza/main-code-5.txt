@@ -1,0 +1,1 @@
+\figurename~\ref{fig:obrazok}

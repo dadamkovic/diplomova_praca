@@ -1,0 +1,5 @@
+\begin{sidewaysfigure}[p]
+\centering
+\includegraphics[width=23cm]{wide_figure}
+\caption{Obzvlášť veľký a široký obrázok.}
+\end{sidewaysfigure}

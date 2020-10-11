@@ -1,0 +1,1 @@
+\chapter[Skrátený nadpis kapitoly]{Nepríjemne dlhý a ťažko zobraziteľný nadpis kapitoly, ktorý sa naozaj nikam nezmestí bez toho, aby sa mu vyhradila osobitná strana}

@@ -1,0 +1,10 @@
+@InBook{Kikimor2008IB,
+  Title                    = {Mrkva, zemiaky a iná koreňová zelenina},
+
+  [...]
+
+  Chapter                  = {5},
+
+  [...]
+
+}

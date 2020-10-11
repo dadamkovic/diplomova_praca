@@ -1,0 +1,10 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\babel@toc {slovak}{}
+\contentsline {chapter}{Abbreviations}{v}{chapter*.3}%
+\contentsline {chapter}{Dictionary of terms}{vii}{chapter*.5}%
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
+\contentsline {chapter}{\numberline {2}Deep reinforcement learning}{3}{chapter.2}%
+\contentsline {section}{\numberline {2.1}DRL in the context of AI}{3}{section.2.1}%
+\contentsline {part}{Prílohová časť}{5}{section*.8}%
+\contentsline {chapter}{\numberline {A}Zeleninový šalát}{I}{appendix.A}%
+\contentsline {section}{\numberline {A.1}Textová vata}{I}{section.A.1}%

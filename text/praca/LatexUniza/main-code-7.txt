@@ -1,0 +1,17 @@
+\begin{figure}
+\centering
+\begin{subfigure}[c]{0.5\textwidth}
+	\centering
+	\includegraphics[width=6.5cm]{pareto_dominance}
+	\caption{Pareto dominancia.}
+	\label{fig:subfig1}
+\end{subfigure}~
+\begin{subfigure}[c]{0.5\textwidth}
+	\centering
+	\includegraphics[width=6.5cm]{pareto_front}
+	\caption{Pareto front.}
+	\label{fig:subfig2}
+\end{subfigure}
+\caption{Ilustrácia: Pareto dominancia a Pareto front.}
+\label{fig:fig_with_subfigs}
+\end{figure}

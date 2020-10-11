@@ -163,7 +163,7 @@
 \newcommand{\reviewer}[1]{\def\Reviewer{#1}}
 
 \newcommand{\university}[1]{\def\University{#1}}
-\university{Žilinská univerzita v Žiline}
+\university{University of Žilina}
 \newcommand{\faculty}[1]{\def\Faculty{#1}}
 \newcommand{\facultyshort}[1]{\def\FacultyShort{#1}}
 \newcommand{\department}[1]{\def\Department{#1}}
@@ -201,7 +201,7 @@
 }
 
 \newcommand{\acknowledgementsName}[1]{\def\AcknowledgementsName{#1}}
-\acknowledgementsName{Poďakovanie}
+\acknowledgementsName{Acknowledgments}
 \newcommand{\acknowledgements}[1]{\def\Acknowledgements{#1}}
 
 %-------------------------------------------------------
@@ -460,11 +460,11 @@
 %               Title page and cover macros
 %-------------------------------------------------------
 
-\newcommand{\SupervisorName}{Vedúci práce}
-\newcommand{\DocIdName}{Evidenčné číslo}
-\newcommand{\StudyProgrammeName}{Študijný program}
-\newcommand{\FieldOfStudyName}{Študijný odbor}
-\newcommand{\SupervisorInstName}{Školiace pracovisko}
+\newcommand{\SupervisorName}{Supervisor}
+\newcommand{\DocIdName}{Identifier}
+\newcommand{\StudyProgrammeName}{Study program}
+\newcommand{\FieldOfStudyName}{Field of study}
+\newcommand{\SupervisorInstName}{Supervising institution}
 \newcommand{\ConsultantName}{Konzultant}
 
 % makecover

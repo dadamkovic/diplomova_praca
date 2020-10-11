@@ -1,4 +1,4 @@
-% !TeX spellcheck = sk_SK
+% !TeX spellcheck = en_US
 % LaTeX document class
 \documentclass[nominted]{uniza}
 
@@ -18,20 +18,21 @@
 \usepackage[english,slovak]{babel}
 
 %-------------------------------------------------------
+
 %                Informácie o dokumente
 %-------------------------------------------------------
 
-\title{Názov práce}
-\subtitle{Podnázov práce (ak existuje)}
-\author{Titul, meno a priezvisko}
-\keywords{Vložte minimálne 4 kľúčové slová výstižne charakterizujúce spracovanú tému.}
-\keywordsSecLang{Insert the minimum of 4 keywords that accurately characterize your topic.}
+\title{Realizing walking for a walking robot using deep reinforcement learning}
+\subtitle{*The name is a placeholder until I get official english name}
+\author{Bc., Daniel Adamkovič}
+\keywords{robotics, deep reinforcement learning, artificial intelligence, simulation}
+\keywordsSecLang{robotika, hlboké učenie s odmenou, umelá inteligencia, simulácia}
 
-\keywordsName{Kľúčové slová}
-\keywordsNameSecLang{Keywords}
+\keywordsName{Keywords}
+\keywordsNameSecLang{Kľúčové slová}
 
-\faculty{Elektrotechnická fakulta}
-\department{Katedra riadiacich a informačných systémov}
+\faculty{Faculty of Electrical Engineering and Information Technology}
+\department{Department of Control and Information Systems}
 
 % školiace pracovisko, ak je iné než katedra:
 %\supervisorinst{
@@ -39,30 +40,29 @@
 %	Kompetenčné centrum Žilina
 %}
 
-\facultyshort{EF}
+\facultyshort{FEIT}
 \location{Žilina}
 
-\doctype{Diplomová práca}
-\docid{Evidenčné číslo práce}
-\supervisor{Titul, vedúci práce}
-%Meno konzultanta (ak existuje):
-\consultant{Titul, konzultant práce}
+\doctype{Master thesis}
+\docid{69 69 420}
+\supervisor{Ing. PhD., Michal Gregor}
 
-\academicyear{2017/2018} % akademický rok
-\submissionyear{2018} % rok odovzdania práce
+
+\academicyear{2020/2021} % akademický rok
+\submissionyear{2020} % rok odovzdania práce
 % Študijný program:
-\studyprogramme{Riadenie procesov}
+\studyprogramme{Cybernetics}
 % Študijný odbor:
-\fieldofstudy{5.2.14 Automatizácia}
+\fieldofstudy{5.2.14 Automation}
 
 % Abstrakt v hlavnom jazyku
-\abstract{Abstrakt}{
+\abstract{Abstract}{
 Abstrakt obsahuje informáciu o cieľoch práce, jej stručnom obsahu a v závere abstraktu sa charakterizuje splnenie cieľa, výsledky a význam celej práce. Abstrakt sa píše súvisle ako jeden odsek a jeho rozsah je spravidla 100 až 500 slov.
 }
 
 % Abstrakt v cudzom jazyku (anglickom, nemeckom, ...)
-\abstractSecLang{Abstract}{
-In this place insert the text of the abstract in English or another foreign language. Sem vložte text abstraktu v angličtine, prípadne v inom cudzom jazyku.
+\abstractSecLang{Abstrakt}{
+Nejaký abstrakt po slovensky.
 }
 
 \date{Dátum odovzdania práce}
@@ -95,9 +95,9 @@ In this place insert the text of the abstract in English or another foreign lang
 %-------------------------------------------------------
 %		Korektné zalamovanie spojok na konci riadku.
 %-------------------------------------------------------
-\usepackage{encxvlna}
+%\usepackage{encxvlna}
 % a temporary workaround for encxvlna breaking multiarg macros
-\mubyte { {\endmubyte
+
 
 %-------------------------------------------------------
 %					Začiatok dokumentu
@@ -147,7 +147,7 @@ In this place insert the text of the abstract in English or another foreign lang
 \acsetup{page-ref=comma,list-style=acronyms
 }{
 	\ifargoutempty{\printacronyms[include-classes=abbrev,heading=none]}{}{
-		\unchapter{Zoznam skratiek}
+		\unchapter{Abbreviations}
 		\argoutemptyFirstArg
 	}
 }
@@ -155,7 +155,7 @@ In this place insert the text of the abstract in English or another foreign lang
 % dictionary
 \acsetup{page-ref=none,list-style=dictstyle,extra-style=plain,extra-format={\;},only-used=false}{
 \ifargoutempty{\printacronyms[include-classes=dict,heading=none]}{}{
-	\unchapter{Slovník pojmov}
+	\unchapter{Dictionary of terms}
 	\setlength{\columnseprule}{0.2pt}
 	\setlength{\columnsep}{1.25cm}
 	\begin{multicols}{2}
@@ -170,11 +170,9 @@ In this place insert the text of the abstract in English or another foreign lang
 %-------------------------------------------------------
 \mainmatter
 
-\include{kap_uvod}
-\include{kap_sablona}
-\include{kap_latex}
-\include{kap_citacie}
-\include{kap_typografia}
+\include{chapter_0}
+\include{chapter_1}
+
 
 %-------------------------------------------------------
 %                     Bibliography

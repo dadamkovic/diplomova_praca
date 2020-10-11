@@ -1,0 +1,17 @@
+@Book{Kikimor2008,
+  Title                    = {Mrkva, zemiaky a iná koreňová zelenina},
+  Author                   = {Jozef Kikimor and Juraj Holota},
+  Editor                   = {Jakub Hľuza},
+  ISBN                     = {978-80-7252-225-1},
+  Publisher                = {Grada Publishing, a.s.},
+  Year                     = {2008},
+  Pagetotal                = {214},
+
+  Address                  = {Žilina},
+  Edition                  = {2. vydanie},
+  Series                   = {Pokročilé témy v informatike},
+
+  Commentator              = {Mária Čanecká},
+  Subtitle                 = {Štúdie v okopávaní},
+  Translator               = {Dušan Závada}
+}

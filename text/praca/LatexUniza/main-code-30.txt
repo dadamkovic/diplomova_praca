@@ -1,0 +1,11 @@
+@Periodical{periodical2014,
+  Title                    = {Časopis nových vynálezov},
+  Year                     = {2014},
+  ISSN                     = {1211-0748},
+  Number                   = {12},
+  Volume                   = {4},
+
+  Address                  = {Čabracký Vrbovok},
+  Publisher                = {Hľuza Publishing},
+  Timestamp                = {2017.09.18}
+}

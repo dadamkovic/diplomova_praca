@@ -1,0 +1,4 @@
+\begin{gather}
+x = 2a - 3b \\
+y = x^2.
+\end{gather}

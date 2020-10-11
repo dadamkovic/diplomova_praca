@@ -1,0 +1,1 @@
+\todo[inline]{Príklad TODO poznámky.}
