@@ -1,0 +1,7 @@
+README.md
+setup.py
+nextro_env.egg-info/PKG-INFO
+nextro_env.egg-info/SOURCES.txt
+nextro_env.egg-info/dependency_links.txt
+nextro_env.egg-info/requires.txt
+nextro_env.egg-info/top_level.txt

@@ -1,0 +1,566 @@
+<?xml version="1.0"?>
+<!-- created with Phobos 1.0.1 "Capricious Choutengan" -->
+  <robot name="nextro">
+
+    <link name="base_link_jointfix">
+      <inertial>
+        <origin xyz="0.18274 -0.00443 0.01211" rpy="0 0 0"/>
+        <mass value="0.45"/>
+        <inertia ixx="47.1259" ixy="0" ixz="0" iyy="0.20762" iyz="0" izz="0.02842"/>
+      </inertial>
+      <visual name="body_vis">
+        <origin xyz="0.07363 -0.00193 0.00527" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/base BodyUp.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+      <collision name="body_col">
+        <origin xyz="0.07474 -0.00193 0.00526" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/base BodyUp.002.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="left_back_ankle_joint">
+      <inertial>
+        <origin xyz="-0.02611 0.00095 0" rpy="0 0 0"/>
+        <mass value="0.08"/>
+        <inertia ixx="0.00032" ixy="0" ixz="0" iyy="0.00032" iyz="0" izz="2e-05"/>
+      </inertial>
+      <visual name="left_back_lower_vis">
+        <origin xyz="-0.0605 0.00095 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Tibia 018.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+      <collision name="left_back_lower_col">
+        <origin xyz="-0.0605 0.00095 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Tibia 018.001.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="left_back_hip_joint">
+      <inertial>
+        <origin xyz="-0.02722 -0.03328 0" rpy="0 0 0"/>
+        <mass value="0.15"/>
+        <inertia ixx="0.00091" ixy="0" ixz="0" iyy="0.00091" iyz="0" izz="0.00071"/>
+      </inertial>
+      <visual name="left_back_servo">
+        <origin xyz="-0.01137 -0.01393 -0.00681" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.05401 0.04997 0.06628"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="left_back_knee_joint">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+      </inertial>
+      <visual name="left_back_mid_vis">
+        <origin xyz="0 -0.04054 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Femur 017.004.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+        <material name="Material.008"/>
+      </visual>
+      <collision name="left_back_mid_col">
+        <origin xyz="3e-05 -0.04054 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <box size="0.05918 0.10881 0.03203"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="left_center_ankle_joint">
+      <inertial>
+        <origin xyz="-0.02267 0.0021 0" rpy="0 0 0"/>
+        <mass value="0.08"/>
+        <inertia ixx="0.00032" ixy="0" ixz="0" iyy="0.00032" iyz="0" izz="2e-05"/>
+      </inertial>
+      <visual name="left_center_lower_vis">
+        <origin xyz="-0.05905 0.0021 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Tibia 022.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+        <material name="Material.002"/>
+      </visual>
+      <collision name="left_center_lower_col">
+        <origin xyz="-0.05905 0.0021 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Tibia 022.001.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="left_center_hip_joint">
+      <inertial>
+        <origin xyz="-0.031 -0.03493 0" rpy="0 0 0"/>
+        <mass value="0.15"/>
+        <inertia ixx="0.00152" ixy="0" ixz="0" iyy="0.00152" iyz="0" izz="0.00118"/>
+      </inertial>
+      <visual name="left_center_servo">
+        <origin xyz="-0.01141 -0.01455 -0.00681" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.05401 0.04997 0.06628"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="left_center_knee_joint">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+      </inertial>
+      <visual name="left_center_mid_vis">
+        <origin xyz="0.00196 -0.03992 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Femur 017.002.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+        <material name="Material.009"/>
+      </visual>
+      <collision name="left_center_mid_col">
+        <origin xyz="0.00199 -0.03992 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <box size="0.05918 0.10881 0.03203"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="left_front_ankle_joint">
+      <inertial>
+        <origin xyz="-0.01972 0 0" rpy="0 0 0"/>
+        <mass value="0.08"/>
+        <inertia ixx="0.00032" ixy="0" ixz="0" iyy="0.00032" iyz="0" izz="2e-05"/>
+      </inertial>
+      <visual name="left_front_lower_vis">
+        <origin xyz="-0.05832 0 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Tibia 026.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+      <collision name="left_front_lower_col">
+        <origin xyz="-0.05832 0 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Tibia 026.001.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="left_front_hip_joint">
+      <inertial>
+        <origin xyz="-0.04696 -0.04435 0" rpy="0 0 0"/>
+        <mass value="0.15"/>
+        <inertia ixx="0.01111" ixy="0" ixz="0" iyy="0.01111" iyz="0" izz="0.00864"/>
+      </inertial>
+      <visual name="left_front_servo">
+        <origin xyz="-0.0102 -0.01217 -0.00681" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.05401 0.04997 0.06628"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="left_front_knee_joint">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+      </inertial>
+      <visual name="left_front_mid_vis">
+        <origin xyz="0.00089 -0.04084 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Femur 017.003.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+        <material name="Material.003"/>
+      </visual>
+      <collision name="left_front_mid_col">
+        <origin xyz="0.00092 -0.04084 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <box size="0.05918 0.10881 0.03203"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="left_legs_jointfix">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+      </inertial>
+    </link>
+
+    <link name="new_link">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+      </inertial>
+    </link>
+
+    <link name="right_back_ankle_joint">
+      <inertial>
+        <origin xyz="-0.023 -0.00058 0" rpy="0 0 0"/>
+        <mass value="0.08"/>
+        <inertia ixx="0.00032" ixy="0" ixz="0" iyy="0.00032" iyz="0" izz="2e-05"/>
+      </inertial>
+      <visual name="right_back_lower_vis">
+        <origin xyz="-0.05962 -0.00058 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Tibia 020.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+        <material name="Material.004"/>
+      </visual>
+      <collision name="right_back_lower_col">
+        <origin xyz="-0.05961 -0.00059 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Tibia 020.009.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="right_back_hip_joint">
+      <inertial>
+        <origin xyz="-0.03014 0.06254 0" rpy="0 0 0"/>
+        <mass value="0.15"/>
+        <inertia ixx="0.0105" ixy="0" ixz="0" iyy="0.0105" iyz="0" izz="0.00817"/>
+      </inertial>
+      <visual name="rght_back_servo">
+        <origin xyz="-0.01019 0.01397 0.0029" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.05401 0.04997 0.06628"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="right_back_knee_joint">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+      </inertial>
+      <visual name="right_back_mid_vis">
+        <origin xyz="0 0.04086 -0.02836" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Femur 017.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+        <material name="Material.005"/>
+      </visual>
+      <collision name="right_back_mid_col">
+        <origin xyz="-7e-05 0.04102 -0.02836" rpy="0 1.5708 0"/>
+        <geometry>
+          <box size="0.05918 0.10881 0.03203"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="right_center_ankle_joint">
+      <inertial>
+        <origin xyz="-0.02039 -0.00143 0.00304" rpy="0 0 0"/>
+        <mass value="0.08"/>
+        <inertia ixx="0.00032" ixy="0" ixz="0" iyy="0.00032" iyz="0" izz="2e-05"/>
+      </inertial>
+      <visual name="right_center_lower_vis">
+        <origin xyz="-0.058 -0.00143 0.00304" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Tibia 024.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+        <material name="Material.001"/>
+      </visual>
+      <collision name="right_center_lower_col">
+        <origin xyz="-0.05799 -0.00144 0.00305" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Tibia 024.004.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="right_center_hip_joint">
+      <inertial>
+        <origin xyz="-0.03963 0.06971 0" rpy="0 0 0"/>
+        <mass value="0.15"/>
+        <inertia ixx="0.00994" ixy="0" ixz="0" iyy="0.00994" iyz="0" izz="0.00773"/>
+      </inertial>
+      <visual name="right_center_servo">
+        <origin xyz="-0.01189 0.01371 0.00021" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.05403 0.05014 0.06629"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="right_center_knee_joint">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+      </inertial>
+      <visual name="right_center_mid_vis">
+        <origin xyz="0.00544 0.0423 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Femur 017.006.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+        <material name="Material.006"/>
+      </visual>
+      <collision name="right_center_mid_col">
+        <origin xyz="0.00522 0.04205 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <box size="0.05918 0.10881 0.03203"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="right_front_ankle_joint">
+      <inertial>
+        <origin xyz="-0.02055 -0.00033 0.00304" rpy="0 0 0"/>
+        <mass value="0.08"/>
+        <inertia ixx="0.00032" ixy="0" ixz="0" iyy="0.00032" iyz="0" izz="2e-05"/>
+      </inertial>
+      <visual name="right_front_lower_vis">
+        <origin xyz="-0.05964 -0.00033 0.00304" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Tibia 028.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+      <collision name="right_front_lower_col">
+        <origin xyz="-0.05963 -0.00033 0.00305" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Tibia 028.001.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <link name="right_front_hip_joint">
+      <inertial>
+        <origin xyz="-0.0277 0.04478 0" rpy="0 0 0"/>
+        <mass value="0.15"/>
+        <inertia ixx="0.00766" ixy="0" ixz="0" iyy="0.00766" iyz="0" izz="0.00595"/>
+      </inertial>
+      <visual name="right_front_servo">
+        <origin xyz="-0.01014 0.01397 0.0029" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.05402 0.04998 0.06627"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="right_front_knee_joint">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.001"/>
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+      </inertial>
+      <visual name="right_front_mid_vis">
+        <origin xyz="0.00333 0.04347 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <mesh filename="../meshes/stl/Base Femur 017.005.stl" scale="1.0 1.0 1.0"/>
+        </geometry>
+        <material name="Material.007"/>
+      </visual>
+      <collision name="right_front_mid_col">
+        <origin xyz="0.00318 0.04344 0" rpy="0 1.5708 0"/>
+        <geometry>
+          <box size="0.05918 0.10881 0.03203"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="left_back_ankle_joint" type="revolute">
+      <origin xyz="-0.00352 -0.08495 0.00142" rpy="0 0 0"/>
+      <parent link="left_back_knee_joint"/>
+      <child link="left_back_ankle_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-6.28" upper="6.28" effort="100.0" velocity="100.0"/>
+    </joint>
+
+    <joint name="left_back_hip_joint" type="revolute">
+      <origin xyz="0.1076 -0.03938 0.03905" rpy="0 0 0"/>
+      <parent link="left_legs_jointfix"/>
+      <child link="left_back_hip_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-6.28" upper="6.28" effort="100.0" velocity="100.0"/>
+    </joint>
+
+    <joint name="left_back_knee_joint" type="revolute">
+      <origin xyz="-0.01171 -0.03092 0.01414" rpy="0 -1.5708 0"/>
+      <parent link="left_back_hip_joint"/>
+      <child link="left_back_knee_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-3.0" upper="3.0" effort="0" velocity="0"/>
+    </joint>
+
+    <joint name="left_center_ankle_joint" type="revolute">
+      <origin xyz="-0.003 -0.08547 0" rpy="0 0 0"/>
+      <parent link="left_center_knee_joint"/>
+      <child link="left_center_ankle_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-6.28" upper="6.28" effort="100.0" velocity="100.0"/>
+    </joint>
+
+    <joint name="left_center_hip_joint" type="revolute">
+      <origin xyz="0.00455 -0.04977 0.03905" rpy="0 0 0"/>
+      <parent link="left_legs_jointfix"/>
+      <child link="left_center_hip_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-6.28" upper="6.28" effort="100.0" velocity="100.0"/>
+    </joint>
+
+    <joint name="left_center_knee_joint" type="revolute">
+      <origin xyz="-0.01175 -0.03216 0.01218" rpy="0 -1.5708 0"/>
+      <parent link="left_center_hip_joint"/>
+      <child link="left_center_knee_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-6.28" upper="6.28" effort="100.0" velocity="100.0"/>
+    </joint>
+
+    <joint name="left_front_ankle_joint" type="revolute">
+      <origin xyz="-0.0048 -0.08429 0" rpy="0 0 0"/>
+      <parent link="left_front_knee_joint"/>
+      <child link="left_front_ankle_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-6.28" upper="6.28" effort="100.0" velocity="100.0"/>
+    </joint>
+
+    <joint name="left_front_hip_joint" type="revolute">
+      <origin xyz="-0.11041 -0.02281 0.03905" rpy="0 0 0"/>
+      <parent link="left_legs_jointfix"/>
+      <child link="left_front_hip_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-6.28" upper="6.28" effort="100.0" velocity="100.0"/>
+    </joint>
+
+    <joint name="left_front_knee_joint" type="revolute">
+      <origin xyz="-0.01054 -0.02886 0.01325" rpy="0 -1.5708 0"/>
+      <parent link="left_front_hip_joint"/>
+      <child link="left_front_knee_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-6.28" upper="6.28" effort="100.0" velocity="100.0"/>
+    </joint>
+
+    <joint name="left_legs_jointfix" type="fixed">
+      <origin xyz="0.08273 -0.03863 -0.02058" rpy="0 0 0"/>
+      <parent link="base_link_jointfix"/>
+      <child link="left_legs_jointfix"/>
+    </joint>
+
+    <joint name="right_back_ankle_joint" type="revolute">
+      <origin xyz="-0.0044 0.0849 -0.02835" rpy="0 0 0"/>
+      <parent link="right_back_knee_joint"/>
+      <child link="right_back_ankle_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-3.0" upper="3.0" effort="0" velocity="0"/>
+    </joint>
+
+    <joint name="right_back_hip_joint" type="revolute">
+      <origin xyz="0.10729 0.04375 0.02835" rpy="0 0 0"/>
+      <parent link="new_link"/>
+      <child link="right_back_hip_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-6.28" upper="6.28" effort="100.0" velocity="100.0"/>
+    </joint>
+
+    <joint name="right_back_knee_joint" type="revolute">
+      <origin xyz="-0.03888 0.03066 0.02385" rpy="0 -1.5708 0"/>
+      <parent link="right_back_hip_joint"/>
+      <child link="right_back_knee_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-3.0" upper="3.0" effort="0" velocity="0"/>
+    </joint>
+
+    <joint name="right_center_ankle_joint" type="revolute">
+      <origin xyz="-0.00058 0.08719 -0.00304" rpy="0 0 0"/>
+      <parent link="right_center_knee_joint"/>
+      <child link="right_center_ankle_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-3.0" upper="3.0" effort="0" velocity="0"/>
+    </joint>
+
+    <joint name="right_center_hip_joint" type="revolute">
+      <origin xyz="0.0059 0.05502 0.03104" rpy="0 0 0"/>
+      <parent link="new_link"/>
+      <child link="right_center_hip_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-6.28" upper="6.28" effort="100.0" velocity="100.0"/>
+    </joint>
+
+    <joint name="right_center_knee_joint" type="revolute">
+      <origin xyz="-0.01224 0.02896 0.01572" rpy="0 -1.5708 0"/>
+      <parent link="right_center_hip_joint"/>
+      <child link="right_center_knee_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-6.28" upper="6.28" effort="100.0" velocity="100.0"/>
+    </joint>
+
+    <joint name="right_front_ankle_joint" type="revolute">
+      <origin xyz="-0.00104 0.08725 -0.00304" rpy="0 0 0"/>
+      <parent link="right_front_knee_joint"/>
+      <child link="right_front_ankle_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-3.0" upper="3.0" effort="0" velocity="0"/>
+    </joint>
+
+    <joint name="right_front_hip_joint" type="revolute">
+      <origin xyz="-0.10961 0.02542 0.02835" rpy="0 0 0"/>
+      <parent link="new_link"/>
+      <child link="right_front_hip_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-6.28" upper="6.28" effort="100.0" velocity="100.0"/>
+    </joint>
+
+    <joint name="right_front_knee_joint" type="revolute">
+      <origin xyz="-0.01048 0.02805 0.02051" rpy="0 -1.5708 0"/>
+      <parent link="right_front_hip_joint"/>
+      <child link="right_front_knee_joint"/>
+      <axis xyz="0 0 1.0"/>
+      <limit lower="-3.0" upper="3.0" effort="0" velocity="0"/>
+    </joint>
+
+    <joint name="right_legs_jointfix" type="fixed">
+      <origin xyz="0.08186 0.03035 -0.01959" rpy="0 0 0"/>
+      <parent link="base_link_jointfix"/>
+      <child link="new_link"/>
+    </joint>
+
+    <material name="Material.001">
+      <color rgba="0.00122 0.78118 0.06571 1.0"/>
+    </material>
+
+    <material name="Material.002">
+      <color rgba="0.00211 0.05274 0.64 1.0"/>
+    </material>
+
+    <material name="Material.003">
+      <color rgba="0.64 0.09462 0.18545 1.0"/>
+    </material>
+
+    <material name="Material.004">
+      <color rgba="0.64 0 0.33575 1.0"/>
+    </material>
+
+    <material name="Material.005">
+      <color rgba="0.58103 0.00418 0.64 1.0"/>
+    </material>
+
+    <material name="Material.006">
+      <color rgba="0.22297 0.64 0.30403 1.0"/>
+    </material>
+
+    <material name="Material.007">
+      <color rgba="0.64 0 0.00143 1.0"/>
+    </material>
+
+    <material name="Material.008">
+      <color rgba="0.64 0.49535 0.017 1.0"/>
+    </material>
+
+    <material name="Material.009">
+      <color rgba="0.00709 0.51823 0.64 1.0"/>
+    </material>
+
+  </robot>

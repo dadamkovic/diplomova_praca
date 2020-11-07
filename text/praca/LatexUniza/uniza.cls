@@ -264,7 +264,14 @@
   	leftmargin=0cm,
   	font=\addcolon
 }
-\DeclareAcroListStyle{dictstyle}{list}{ list = dict }
+
+\NewAcroTemplate[list]{dictstyle}{%
+	\let\description\dict
+	\let\enddescription\enddict
+	\UseAcroTemplate[list]{description}[0]%
+}
+
+%\DeclareAcroListStyle{dictstyle}{list}{ list = dict }
 
 \newlist{subdict}{description}{1}
 \setlist[subdict]{

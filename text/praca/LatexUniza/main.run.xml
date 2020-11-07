@@ -61,7 +61,6 @@
       <file>iso-fullcite.cbx</file>
       <file>iso-numeric.cbx</file>
       <file>biblatex.cfg</file>
-      <file>slovak.lbx</file>
       <file>english.lbx</file>
     </requires>
   </internal>
