@@ -137,7 +137,10 @@ class NextroEnv(gym.Env):
         self.state = self._getstate()
         self.reward = self._get_reward_updatedone()
         p.stepSimulation()
-
+        
+        if self._time_delay:
+            time.sleep(self._time_step)
+        
         return self.state, self.reward, self.done, self._info
 
     def seed(self, seed=None):
@@ -169,15 +172,18 @@ class NextroEnv(gym.Env):
         position_change = self._new_dist_travelled - self._old_dist_travelled
         self._old_dist_travelled = self._new_dist_travelled
 
-        return position_change + DISTANCE_DISCOUNT*self._new_dist_travelled
-
+        #return position_change + DISTANCE_DISCOUNT*self._new_dist_travelled
+        return self._new_dist_travelled
+    
     #no need for this method
     def render(self, **kwargs):
         if self.client is not None:
             return
         if kwargs['mode'] == 'human':
             self.client = p.connect(p.GUI)
+            self._time_delay = True
         else:
+            self._time_delay = False
             self.client = p.connect(p.DIRECT)
         p.setTimeStep(self._time_step, self.client)
         #used by loadURDF(plane.urdf)

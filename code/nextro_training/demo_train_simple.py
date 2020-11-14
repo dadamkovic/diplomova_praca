@@ -9,7 +9,7 @@ Created on Sat Oct 31 11:27:59 2020
 # from class_utils import tflog2pandas
 
 import all.presets
-from all.experiments import SingleEnvExperiment, load_and_watch
+from all.experiments import SingleEnvExperiment, load_and_watch, ParallelEnvExperiment
 from all.environments import GymEnvironment
 import all
 import nextro_env
