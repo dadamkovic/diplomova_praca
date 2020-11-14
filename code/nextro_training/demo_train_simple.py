@@ -7,35 +7,31 @@ Created on Sat Oct 31 11:27:59 2020
 """
 
 # from class_utils import tflog2pandas
-import matplotlib.pyplot as plt
+
 import all.presets
-from all.experiments import SingleEnvExperiment, ExperimentWriter
+from all.experiments import SingleEnvExperiment, load_and_watch
 from all.environments import GymEnvironment
-from nbcap import ShowVideoCallback, ScreenRecorder, OutputManager, DisplayProcess
-import numpy as np
-
 import all
-import gym
-import time
-import numpy as np
-
+import nextro_env
+import pickle
 
 
 
 device = 'cuda'
-env = GymEnvironment('nextro_env:nextro-v0', device)
+env = GymEnvironment('nextro-v0', device)
+env.render(mode='train')
 env.reset();
 agent = all.presets.continuous.sac(device=device)
 exp = SingleEnvExperiment(agent, env)
 
-exp.train(episodes=250000)
-    
-exp.test(episodes=5)
-    
-# df = tflog2pandas(exp._writer.logdir)
-# df_episode_ret = df[df['metric'] == 'AntBulletEnv-v0/evaluation/returns/episode']
+exp.train(episodes=25)
 
-# plt.plot(df_episode_ret['step'], df_episode_ret['value'].rolling(25, min_periods=1).mean())
-# plt.xlabel('episode')
-# plt.ylabel('total reward')
-# plt.grid(ls='--')
+
+with open(r'policy.obj','wb') as fh:
+    pickle.dump(exp._agent.agent.policy.model, fh)
+with open(r'q1.obj','wb') as fh:
+    pickle.dump(exp._agent.agent.q_1.model , fh)
+with open(r'q2.obj','wb') as fh:
+    pickle.dump(exp._agent.agent.q_2.model, fh)
+with open(r'val.obj','wb') as fh:
+    pickle.dump(exp._agent.agent.v.model, fh)

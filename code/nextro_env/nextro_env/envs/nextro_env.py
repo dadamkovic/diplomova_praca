@@ -14,6 +14,7 @@ from pybullet_envs import robot_bases as rb
 import pybullet_data
 import numpy as np
 
+
 #the urdf location has to be absolute path
 NEXTRO_LOC = __file__.replace('envs/nextro_env.py','assets/urdf/nextro.urdf')
 #default maximal length in seconds of a single episode
@@ -67,11 +68,11 @@ class NextroEnv(gym.Env):
         self.observation_space = self.robot.observation_space
         self.np_random, _ = gym.utils.seeding.np_random()
      
-        
-        self._state = None
-        self._action = None
-        self._reward = None
-        self._done = True
+        self.device = 'cuda'
+        self.state = None
+        self.action = None
+        self.reward = None
+        self.done = True
         self._info = None
         
         #set true after reset, set to false after episode ends
@@ -85,16 +86,15 @@ class NextroEnv(gym.Env):
         self._time_elapsed = 0
         self._old_dist_travelled = 0
 
-        self.client = p.connect(p.GUI)
-        p.setTimeStep(self._time_step, self.client)
-        #used by loadURDF(plane.urdf)
-        p.setAdditionalSearchPath(pybullet_data.getDataPath())
+        self.client = None
+        
+        
 
 
     #reset is called when first creating the env and after each episode ends
     def reset(self):
         self._init = True
-        self._done = False
+        self.done = False
         
         #if the robot is loaded we only need to move it not add it again
         if self.robot.robot_body is not None:
@@ -115,13 +115,13 @@ class NextroEnv(gym.Env):
         self._time_elapsed = 0
         #reset baseline position
         self._old_dist_travelled = 0
-        self._state = self._get_state()
-        return self._state
+        self.state = self._getstate()
+        return self.state
 
-    def step(self, action, no_sleep=True):
+    def step(self, action):
         if not self._init:
             raise Exception('Initialize the environment first!')
-        if self._done:
+        if self.done:
             raise Exception('Reset environment after episode ends!')
             
         angles = []
@@ -134,15 +134,11 @@ class NextroEnv(gym.Env):
                                                          None))
         self._set_joints(angles)
         self._time_elapsed += self._time_step
-        self._state = self._get_state()
-        self._reward = self._get_reward_update_done()
+        self.state = self._getstate()
+        self.reward = self._get_reward_updatedone()
         p.stepSimulation()
-        
-        #useful for looking at the simulation in real time
-        if not no_sleep:
-            time.sleep(self._time_step)
 
-        return self._state, self._reward, self._done, self._info
+        return self.state, self.reward, self.done, self._info
 
     def seed(self, seed=None):
       self.np_random, seed = seeding.np_random(seed)
@@ -150,18 +146,18 @@ class NextroEnv(gym.Env):
 
     #the reward is calculated as postion change in 2D space (x, y axis)
     #plus the discounted total distance from starting position
-    def _get_reward_update_done(self):
+    def _get_reward_updatedone(self):
         x, y, z, a, b, c, d = self.robot.robot_body.get_pose()
         angle = p.getEulerFromQuaternion((a, b, c, d))
         #if the robot turns over end episode and give bad reward
         if abs(angle[0]) > (np.pi/2):
-            self._done = True
+            self.done = True
             self._init = False
             self._time_elapsed = 0
             return -5
         #end episode if it is at the end
         if self._time_elapsed >= self._episode_length:
-            self._done = True
+            self.done = True
             self._init = False
             self._time_elapsed = 0
         
@@ -176,11 +172,20 @@ class NextroEnv(gym.Env):
         return position_change + DISTANCE_DISCOUNT*self._new_dist_travelled
 
     #no need for this method
-    def render(self):
-        pass
+    def render(self, **kwargs):
+        if self.client is not None:
+            return
+        if kwargs['mode'] == 'human':
+            self.client = p.connect(p.GUI)
+        else:
+            self.client = p.connect(p.DIRECT)
+        p.setTimeStep(self._time_step, self.client)
+        #used by loadURDF(plane.urdf)
+        p.setAdditionalSearchPath(pybullet_data.getDataPath())
+        return
 
     #get the current angle of every joint and return them as numpy array
-    def _get_state(self):
+    def _getstate(self):
         if not self._init:
             raise Exception('Initialize the environment first')
         joint_angles = []
