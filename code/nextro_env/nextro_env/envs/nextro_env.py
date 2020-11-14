@@ -25,6 +25,25 @@ FRAMES_PER_SECOND = 30
 #higher is stronger
 DISTANCE_DISCOUNT = 0.8
 
+JOINT_NAMES = ['left_back_hip_joint',
+               'left_back_knee_joint',
+               'left_back_ankle_joint',
+               'left_center_hip_joint',
+               'left_center_knee_joint',
+               'left_center_ankle_joint',
+               'left_front_hip_joint',
+               'left_front_knee_joint',
+               'left_front_ankle_joint',
+               'right_back_hip_joint',
+               'right_back_knee_joint',
+               'right_back_ankle_joint',
+               'right_center_hip_joint',
+               'right_center_knee_joint',
+               'right_center_ankle_joint',
+               'right_front_hip_joint',
+               'right_front_knee_joint',
+               'right_front_ankle_joint']
+
 #exists mostly to define the calc_state and robot_specific_reset methods that
 #are missing in the URDFBasedRobot definition
 class NextroBot(rb.URDFBasedRobot):
@@ -205,5 +224,5 @@ class NextroEnv(gym.Env):
 
     #set joints accoring to the ordered list of joint angles
     def _set_joints(self, angles):
-        for idx, joint in enumerate(self.robot.ordered_joints):
-            joint.set_position(angles[idx])
+        for idx, joint in enumerate(JOINT_NAMES):
+            self.robot.jdict[joint].set_position(angles[idx])

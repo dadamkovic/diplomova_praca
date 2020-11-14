@@ -24,7 +24,7 @@ env.reset();
 agent = all.presets.continuous.sac(device=device)
 exp = SingleEnvExperiment(agent, env)
 
-exp.train(episodes=25)
+exp.train(episodes=2500)
 
 
 with open(r'policy.obj','wb') as fh:
