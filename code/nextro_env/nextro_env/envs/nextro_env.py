@@ -18,12 +18,11 @@ import numpy as np
 #the urdf location has to be absolute path
 NEXTRO_LOC = __file__.replace('envs/nextro_env.py','assets/urdf/nextro.urdf')
 #default maximal length in seconds of a single episode
-DEFAULT_MAX_TIME = 30
+DEFAULT_MAX_TIME = 20
 #defines the FPS that the simulation will run at
 FRAMES_PER_SECOND = 30
-#determines how big of a role total travelled distance plays in the reward
-#higher is stronger
-DISTANCE_DISCOUNT = 0.8
+
+JOINT_MOVEMNT_COST_DISCOUNT = 0.2
 
 JOINT_NAMES = ['left_back_hip_joint',
                'left_back_knee_joint',
@@ -134,6 +133,9 @@ class NextroEnv(gym.Env):
         self._time_elapsed = 0
         #reset baseline position
         self._old_dist_travelled = 0
+        
+        #TODO: change this to non constant later
+        self._old_joint_states = np.zeros(18)
         self.state = self._getstate()
         return self.state
 
@@ -154,7 +156,7 @@ class NextroEnv(gym.Env):
         self._set_joints(angles)
         self._time_elapsed += self._time_step
         self.state = self._getstate()
-        self.reward = self._get_reward_updatedone()
+        self.reward = self._get_reward_update_done()
         p.stepSimulation()
         
         if self._time_delay:
@@ -168,31 +170,36 @@ class NextroEnv(gym.Env):
 
     #the reward is calculated as postion change in 2D space (x, y axis)
     #plus the discounted total distance from starting position
-    def _get_reward_updatedone(self):
+    def _get_reward_update_done(self):
         x, y, z, a, b, c, d = self.robot.robot_body.get_pose()
         angle = p.getEulerFromQuaternion((a, b, c, d))
+        #original position was not exactly [0,0] so adjust current coordinates
+        x = x - self._original_position[0]
+        y = y - self._original_position[1]
+        #distance from the origin (x, y axis)
+        self._new_dist_travelled = np.sqrt(x**2+y**2)
+        
+        reward = -1
+        if self._new_dist_travelled > self._old_dist_travelled:
+            reward = 1
+        self._old_dist_travelled = self._new_dist_travelled
+        current_joint_states = self._getstate()
+        reward = reward - JOINT_MOVEMNT_COST_DISCOUNT*np.sum(np.abs(current_joint_states-self._old_joint_states))
+        self._old_joint_states = current_joint_states
+        
         #if the robot turns over end episode and give bad reward
         if abs(angle[0]) > (np.pi/2):
             self.done = True
             self._init = False
             self._time_elapsed = 0
-            return -5
+            return -500
         #end episode if it is at the end
         if self._time_elapsed >= self._episode_length:
             self.done = True
             self._init = False
             self._time_elapsed = 0
         
-        #original position was not exactly [0,0] so adjust current coordinates
-        x = x - self._original_position[0]
-        y = y - self._original_position[1]
-        #distance from the origin (x, y axis)
-        self._new_dist_travelled = np.sqrt(x**2+y**2)
-        position_change = self._new_dist_travelled - self._old_dist_travelled
-        self._old_dist_travelled = self._new_dist_travelled
-
-        #return position_change + DISTANCE_DISCOUNT*self._new_dist_travelled
-        return self._new_dist_travelled
+        return reward
     
     #no need for this method
     def render(self, **kwargs):
@@ -214,13 +221,15 @@ class NextroEnv(gym.Env):
         if not self._init:
             raise Exception('Initialize the environment first')
         joint_angles = []
-        for joint in self.robot.ordered_joints:
-            joint_angles.append(joint.get_position())
+        for joint in JOINT_NAMES:
+            joint_angles.append(self.robot.jdict[joint].get_position())
         return np.array(joint_angles)
 
     #all joints reset to 0 position
     def _reset_joints(self):
-        self._set_joints(np.zeros(self.action_space.shape[0]//2))
+        for joint in JOINT_NAMES:
+            self.robot.jdict[joint].reset_position(0, 0)
+        
 
     #set joints accoring to the ordered list of joint angles
     def _set_joints(self, angles):

@@ -20,11 +20,11 @@ import pickle
 device = 'cuda'
 env = GymEnvironment('nextro-v0', device)
 env.render(mode='train')
-env.reset();
+env.reset()
 agent = all.presets.continuous.sac(device=device)
 exp = SingleEnvExperiment(agent, env)
 
-exp.train(episodes=2500)
+exp.train(episodes=25)
 
 
 with open(r'policy.obj','wb') as fh:
