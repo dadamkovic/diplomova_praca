@@ -58,7 +58,7 @@ class NextroBot(rb.URDFBasedRobot):
         super().__init__(model_urdf, robot_name, action_dim,
                                    obs_dim, basePosition,baseOrientation,
                                    fixed_base,self_collision)
-        
+
     #only called once when adding the robot urdf into environment
     #the 3 fixed joints are removed from the list of joints and named dictionary
     #with joints as values
@@ -69,7 +69,7 @@ class NextroBot(rb.URDFBasedRobot):
                 fixed_joint = self.jdict[key]
                 del self.jdict[key]
                 self.ordered_joints.remove(fixed_joint)
-    
+
     #by default called in the parent method after adding urdf, is only here to
     #prevent errors
     def calc_state(self):
@@ -78,21 +78,21 @@ class NextroBot(rb.URDFBasedRobot):
 
 #defines all the methods that a gym environment has to provide
 class NextroEnv(gym.Env):
-    def __init__(self, render=False, episode_length=DEFAULT_MAX_TIME):       
+    def __init__(self, render=False, episode_length=DEFAULT_MAX_TIME):
         self.robot = NextroBot(NEXTRO_LOC, 'nextro', 36, 18, basePosition=[0,0,0.1],
                                baseOrientation=[0,0,0,1])
-        
+
         self.action_space = self.robot.action_space
         self.observation_space = self.robot.observation_space
         self.np_random, _ = gym.utils.seeding.np_random()
-     
+
         self.device = 'cuda'
         self.state = None
         self.action = None
         self.reward = None
         self.done = True
         self._info = None
-        
+
         #set true after reset, set to false after episode ends
         self._init = False
         self._time_step = 1/FRAMES_PER_SECOND
@@ -105,15 +105,15 @@ class NextroEnv(gym.Env):
         self._old_dist_travelled = 0
 
         self.client = None
-        
-        
+
+
 
 
     #reset is called when first creating the env and after each episode ends
     def reset(self):
         self._init = True
         self.done = False
-        
+
         #if the robot is loaded we only need to move it not add it again
         if self.robot.robot_body is not None:
             self.robot.robot_body.reset_position(self._original_position)
@@ -128,12 +128,13 @@ class NextroEnv(gym.Env):
             #see above how these are used
             self._original_position = self.robot.robot_body.get_position()
             self._original_orientation = self.robot.robot_body.get_orientation()
-        
+            p.resetDebugVisualizerCamera(1.2, -145, -38, [0,0,0])
+            p.setTimeStep(self._time_step, self.client)
         #reset episode timer
         self._time_elapsed = 0
         #reset baseline position
         self._old_dist_travelled = 0
-        
+
         #TODO: change this to non constant later
         self._old_joint_states = np.zeros(18)
         self.state = self._getstate()
@@ -144,9 +145,9 @@ class NextroEnv(gym.Env):
             raise Exception('Initialize the environment first!')
         if self.done:
             raise Exception('Reset environment after episode ends!')
-            
+
         angles = []
-        
+
         #joint angles are set using the gaussian distribution
         #actions are are paired (mu1, sigma1, mu2, sigma2,...) total 18*2 items
         for idx in range(0, self.action_space.shape[0], 2):
@@ -158,10 +159,10 @@ class NextroEnv(gym.Env):
         self.state = self._getstate()
         self.reward = self._get_reward_update_done()
         p.stepSimulation()
-        
+
         if self._time_delay:
             time.sleep(self._time_step)
-        
+
         return self.state, self.reward, self.done, self._info
 
     def seed(self, seed=None):
@@ -178,7 +179,7 @@ class NextroEnv(gym.Env):
         y = y - self._original_position[1]
         #distance from the origin (x, y axis)
         self._new_dist_travelled = np.sqrt(x**2+y**2)
-        
+
         reward = -1
         if self._new_dist_travelled > self._old_dist_travelled:
             reward = 1
@@ -186,7 +187,7 @@ class NextroEnv(gym.Env):
         current_joint_states = self._getstate()
         reward = reward - JOINT_MOVEMNT_COST_DISCOUNT*np.sum(np.abs(current_joint_states-self._old_joint_states))
         self._old_joint_states = current_joint_states
-        
+
         #if the robot turns over end episode and give bad reward
         if abs(angle[0]) > (np.pi/2):
             self.done = True
@@ -198,12 +199,15 @@ class NextroEnv(gym.Env):
             self.done = True
             self._init = False
             self._time_elapsed = 0
-        
+
         return reward
-    
+
     #no need for this method
     def render(self, **kwargs):
         if self.client is not None:
+            if kwargs['mode'] == 'human':
+                x, y, _ = self.robot.robot_body.get_position()
+                p.resetDebugVisualizerCamera(1.2, -145, -38, [x,y,0])
             return
         if kwargs['mode'] == 'human':
             self.client = p.connect(p.GUI)
@@ -211,7 +215,6 @@ class NextroEnv(gym.Env):
         else:
             self._time_delay = False
             self.client = p.connect(p.DIRECT)
-        p.setTimeStep(self._time_step, self.client)
         #used by loadURDF(plane.urdf)
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         return
@@ -229,7 +232,7 @@ class NextroEnv(gym.Env):
     def _reset_joints(self):
         for joint in JOINT_NAMES:
             self.robot.jdict[joint].reset_position(0, 0)
-        
+
 
     #set joints accoring to the ordered list of joint angles
     def _set_joints(self, angles):

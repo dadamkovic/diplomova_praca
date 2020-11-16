@@ -50,7 +50,7 @@ def make_screen_recorder(max_gui_outputs=10):
         display, display_size, video_path,
         segment_time=segment_time, video_callback=video_callback
     )
-    
+
     return screen_recorder
 
 SCREEN_RECORDER = make_screen_recorder()
@@ -65,10 +65,10 @@ class CapturedExperiment(SingleEnvExperiment):
             self.screen_recorder = make_screen_recorder()
         else:
             self.screen_recorder = screen_recorder
-            
+
         self.capture_train = capture_train
-        self.capture_test = capture_test    
-        
+        self.capture_test = capture_test
+
     def _run_training_episode(self):
         if self.capture_train and not self.screen_recorder is None:
             render = self._render
@@ -77,12 +77,12 @@ class CapturedExperiment(SingleEnvExperiment):
             try:
                 with self.screen_recorder:
                     return super()._run_training_episode()
-            except:          
+            except:
                 self._render = render
                 raise
         else:
             return super()._run_training_episode()
-            
+
     def _run_test_episode(self):
         if self.capture_test and not self.screen_recorder is None:
             render = self._render
@@ -91,9 +91,9 @@ class CapturedExperiment(SingleEnvExperiment):
             try:
                 with self.screen_recorder:
                     return super()._run_test_episode()
-            except:          
+            except:
                 self._render = render
-                raise 
+                raise
         else:
             return super()._run_test_episode()
 
@@ -108,9 +108,9 @@ screen_recorder = make_screen_recorder(max_gui_outputs=1)
 
 with screen_recorder:
     exp.train(frames=250000)
-    
+
 exp.test(episodes=5)
-    
+
 # df = tflog2pandas(exp._writer.logdir)
 # df_episode_ret = df[df['metric'] == 'AntBulletEnv-v0/evaluation/returns/episode']
 

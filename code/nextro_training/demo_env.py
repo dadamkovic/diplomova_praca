@@ -10,8 +10,10 @@ import all
 import gym
 import time
 import numpy as np
+import nextro_env
 
-env = gym.make('nextro_env:nextro-v0')
+
+env = gym.make('nextro-v0')
 #agent = all.presets.continuous.sac()
 env.render(mode='human')
 state = np.array([])
@@ -23,7 +25,7 @@ while True:
     if not done:
         actions += np.random.default_rng().normal(0,0.01,36)
         state, reward, done, _ = env.step(actions)
-        if count > 5: 
+        if count > 5:
             print(reward)
             count = 0
         else:

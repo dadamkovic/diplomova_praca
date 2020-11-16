@@ -14,6 +14,7 @@ from all.environments import GymEnvironment
 import all
 import nextro_env
 import pickle
+import torch
 
 
 
@@ -24,8 +25,9 @@ env.reset()
 agent = all.presets.continuous.sac(device=device)
 exp = SingleEnvExperiment(agent, env)
 
-exp.train(episodes=25)
+exp.train(episodes=5)
 
+torch.save(exp._agent.agent.policy.model, 'someObj.obj')
 
 with open(r'policy.obj','wb') as fh:
     pickle.dump(exp._agent.agent.policy.model, fh)
