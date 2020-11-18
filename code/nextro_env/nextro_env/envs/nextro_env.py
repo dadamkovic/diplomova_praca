@@ -66,7 +66,7 @@ class NextroBot(rb.URDFBasedRobot):
                basePosition=[0, 0, 0],
                baseOrientation=[0, 0, 0, 1],
                fixed_base=False,
-               self_collision=False):
+               self_collision=True):
         super().__init__(model_urdf, robot_name, action_dim,
                                    obs_dim, basePosition,baseOrientation,
                                    fixed_base,self_collision)
