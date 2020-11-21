@@ -197,6 +197,7 @@ class NextroEnv(gym.Env):
         self._old_dist_travelled = 0
         self.obs_buffer = deque(
             np.zeros(STORED_OBSERVATION_SIZE) for _ in range(PREV_OBS_ON_INPUT))
+        self.pid_regs = []
         for idx in range(NUM_JOINTS):
             self.pid_regs.append(PID(0.3, 0, 0.003, self._time_step))
         self.state = self._get_state()
