@@ -2,3 +2,4 @@ robot_model
 text/template
 resources/books
 code/test_playground
+trained_nets

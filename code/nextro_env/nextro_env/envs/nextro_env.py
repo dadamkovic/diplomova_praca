@@ -15,27 +15,35 @@ import pybullet_data
 import numpy as np
 from collections import deque
 
+
 #the urdf location has to be absolute path
 NEXTRO_LOC = __file__.replace('envs/nextro_env.py','assets/urdf/nextro.urdf')
+
 #default maximal length in seconds of a single episode
 DEFAULT_MAX_TIME = 20
+
 #defines the FPS that the simulation will run at
 FRAMES_PER_SECOND = 30
 
+
 NUM_JOINTS = 18
+
 #(NUM_JOINTS joint angles + NUM_JOINTS joint velocities + yaw + pitch + roll)
 CURRENT_SENZOR_OUTPUT_SIZE = (NUM_JOINTS*2 + 3)
+
 #((NUM_JOINTS old joint angles + NUM_JOINTS old joint velocities + NUM_JOINTS previous joint angles) +
 #(yaw + pitch + roll))
 STORED_OBSERVATION_SIZE = NUM_JOINTS*3 + 3
-#4 previous moves
-#TODO: maybe set them spaced 2 frames from each other
-OBSERVATION_SIZE = CURRENT_SENZOR_OUTPUT_SIZE + STORED_OBSERVATION_SIZE*4
-#number of motorized joints on a robot
 
+#number of prevous observations supplied on the input
+PREV_OBS_ON_INPUT = 5
+
+#observation consists of current information and a number of observations from history
+OBSERVATION_SIZE = CURRENT_SENZOR_OUTPUT_SIZE + STORED_OBSERVATION_SIZE*PREV_OBS_ON_INPUT
 
 JOINT_MOVEMNT_COST_DISCOUNT = 0.2
 
+#listed to remove ambiguity when addressing joints
 JOINT_NAMES = ['left_back_hip_joint',
                'left_back_knee_joint',
                'left_back_ankle_joint',
@@ -108,30 +116,57 @@ class NextroEnv(gym.Env):
         self.done = True
         self._info = None
         self.render_env = None
-
-        #set true after reset, set to false after episode ends
-        self._init = False
         self._time_step = 1/FRAMES_PER_SECOND
         self.__name__ = 'Nextro'
         self._episode_length = DEFAULT_MAX_TIME
+
+        #set true after reset, set to false after episode ends
+        self._init = False
         #keeps track of how long an episode has been runnning
         self._time_elapsed = 0
         self._old_dist_travelled = 0
         self.client = None
         self.new_observation = np.zeros(CURRENT_SENZOR_OUTPUT_SIZE)
+        #will hold historic observation as FIFO buffer
         self.obs_buffer = deque(
-            np.zeros(STORED_OBSERVATION_SIZE) for i in range(4))
+            np.zeros(STORED_OBSERVATION_SIZE) for _ in range(PREV_OBS_ON_INPUT))
+
+
+    #called first regardes of render mode, shouldn not have to be called again
+    #if the mode is not 'human'
+    def render(self, **kwargs):
+        if self.client is not None:
+            #will make sure that in human render mode camera will follow robot
+            if self.render_env:
+                x, y, _ = self.robot.robot_body.get_position()
+                #numbers chosen for a good angle can be changed if desired
+                p.resetDebugVisualizerCamera(1.2, -145, -38, [x ,y ,0])
+            return
+
+        #render is callled with param first time, initialization done here
+        if kwargs['mode'] == 'human':
+            self.render_env = True
+            self.client = p.connect(p.GUI)
+            self._time_delay = True
+
+        elif self.client is None:
+            self._time_delay = False
+            self.client = p.connect(p.DIRECT)
+            self.render_env = False
+        #used by loadURDF(plane.urdf)
+        p.setAdditionalSearchPath(pybullet_data.getDataPath())
+        return
+
 
     #reset is called when first creating the env and after each episode ends
     def reset(self):
         self._init = True
         self.done = False
 
+        #render doesn't have to be called in direct mode by user but it should
+        #still run at least once
         if self.render_env == None:
-            self._time_delay = False
-            self.client = p.connect(p.DIRECT)
-            p.setAdditionalSearchPath(pybullet_data.getDataPath())
-            self.render_env = False
+            self.render(mode='direct')
 
         #if the robot is loaded we only need to move it not add it again
         if self.robot.robot_body is not None:
@@ -140,7 +175,6 @@ class NextroEnv(gym.Env):
             self._reset_joints()
         else:
             p.resetSimulation(self.client)
-            p.setTimeStep(self._time_step, self.client)
             p.setGravity(0, 0, -10)
             p.loadURDF("plane.urdf")
             self.robot.reset(p)
@@ -150,6 +184,7 @@ class NextroEnv(gym.Env):
             #move camera closer to robot
             p.resetDebugVisualizerCamera(1.2, -145, -38, [0,0,0])
             p.setTimeStep(self._time_step, self.client)
+
         #reset episode timer
         self._time_elapsed = 0
         #reset baseline position
@@ -160,46 +195,31 @@ class NextroEnv(gym.Env):
         return self.state
 
 
-    #no need for this method
-    def render(self, **kwargs):
-        if self.client is not None:
-            #will make sure that in human render mode camera will follow robot
-            if self.render_env:
-                x, y, _ = self.robot.robot_body.get_position()
-                p.resetDebugVisualizerCamera(1.2, -145, -38, [x ,y ,0])
-            return
-        if kwargs['mode'] == 'human':
-            self.render_env = True
-            self.client = p.connect(p.GUI)
-            self._time_delay = True
-        #TODO:stuff bellow could be potentially removed
-        else:
-            self._time_delay = False
-            self.client = p.connect(p.DIRECT)
-            self.render_env = False
-        #used by loadURDF(plane.urdf)
-        p.setAdditionalSearchPath(pybullet_data.getDataPath())
-        return
+    def _preproc_action(self, action):
+        #clipping to make sure we don't set the motors to weird angles
+        action = np.clip(action, a_min=-1.4, a_max=1.4)
+        #by default motors are not mirrored so negative angle on one side
+        #is positive angle on the other, mirroring is done here
+        for i in range(NUM_JOINTS//2):
+            action[i] *= -1
+        return action
 
 
-    def step(self, action):
+    def step(self, raw_action):
         if not self._init:
             raise Exception('Initialize the environment first!')
         if self.done:
             raise Exception('Reset environment after episode ends!')
-        #TDOD: Here I could potentially add PD regulator
-        #
-        #
-        #clipping to make sure we don't set the motors to weird angles
-        action = np.clip(action, a_min=-1.4, a_max=1.4)
-        self._set_joints(action)
+        #TODO: Here I could potentially add PD regulator
+        self.action = self._preproc_action(raw_action)
+        self._set_joints(self.action)
         self._time_elapsed += self._time_step
 
+        #the order is important here don't change it
+        p.stepSimulation()
         self.state = self._get_state()
         self.reward = self._get_reward_update_done()
-
-        p.stepSimulation()
-        self._update_buffer(action)
+        self._update_buffer(self.action)
 
         #time delay only set in human render mode
         if self._time_delay:
@@ -207,12 +227,15 @@ class NextroEnv(gym.Env):
 
         return self.state, self.reward, self.done, self._info
 
+
     def seed(self, seed=None):
       self.np_random, seed = seeding.np_random(seed)
       return [seed]
 
 
+    #pop old observation from the buufer and push new in
     def _update_buffer(self, action):
+        #part of historic observation is action that was taken
         obs_2_store = np.concatenate((self.new_observation, action))
         self.obs_buffer.pop()
         self.obs_buffer.appendleft(obs_2_store)
@@ -223,15 +246,14 @@ class NextroEnv(gym.Env):
     def _get_reward_update_done(self):
         x, y, z, a, b, c, d = self.robot.robot_body.get_pose()
         yaw, pitch, roll = p.getEulerFromQuaternion((a, b, c, d))
-        #original position was not exactly [0,0] so adjust current coordinates
+
+        #original position might not have been exactly [0,0] so adjust current coordinates
         x = x - self._original_position[0]
         y = y - self._original_position[1]
         #euclidean distance from the origin (x, y axis)
         new_dist_travelled = np.linalg.norm([x, y])
-        reward = -1
-        if new_dist_travelled > self._old_dist_travelled:
-            reward = 1
-            self._old_dist_travelled = new_dist_travelled
+        dist_change = new_dist_travelled - self._old_dist_travelled
+        self._old_dist_travelled = new_dist_travelled
 
         #if the robot turns over end episode and give bad reward
         if abs(yaw) > (np.pi/2):
@@ -244,6 +266,14 @@ class NextroEnv(gym.Env):
             self.done = True
             self._init = False
             self._time_elapsed = 0
+
+        prev_velocities = self.obs_buffer[0][18:36]
+        curr_velocities = self.new_observation[18:36]
+        joint_accel = (curr_velocities - prev_velocities) / self._time_step
+        #this is better form when calculating reward as it punishes sudden movements
+        joint_accel = np.linalg.norm(joint_accel)
+
+        reward = dist_change - 0.05*joint_accel
 
         return reward
 
