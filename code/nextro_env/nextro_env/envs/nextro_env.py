@@ -14,6 +14,7 @@ from pybullet_envs import robot_bases as rb
 import pybullet_data
 import numpy as np
 from collections import deque
+from pid import PID
 
 
 #the urdf location has to be absolute path
@@ -131,6 +132,11 @@ class NextroEnv(gym.Env):
         self.obs_buffer = deque(
             np.zeros(STORED_OBSERVATION_SIZE) for _ in range(PREV_OBS_ON_INPUT))
 
+        self.pid_regs = []
+        for idx in range(NUM_JOINTS):
+            self.pid_regs.append(PID(0.3, 0, 0.003, self._time_step))
+
+
 
     #called first regardes of render mode, shouldn not have to be called again
     #if the mode is not 'human'
@@ -190,7 +196,9 @@ class NextroEnv(gym.Env):
         #reset baseline position
         self._old_dist_travelled = 0
         self.obs_buffer = deque(
-            np.zeros(STORED_OBSERVATION_SIZE) for i in range(4))
+            np.zeros(STORED_OBSERVATION_SIZE) for _ in range(PREV_OBS_ON_INPUT))
+        for idx in range(NUM_JOINTS):
+            self.pid_regs.append(PID(0.3, 0, 0.003, self._time_step))
         self.state = self._get_state()
         return self.state
 
@@ -198,10 +206,15 @@ class NextroEnv(gym.Env):
     def _preproc_action(self, action):
         #clipping to make sure we don't set the motors to weird angles
         action = np.clip(action, a_min=-1.4, a_max=1.4)
+        pid_action = 0
         #by default motors are not mirrored so negative angle on one side
         #is positive angle on the other, mirroring is done here
         for i in range(NUM_JOINTS//2):
             action[i] *= -1
+        for idx in range(NUM_JOINTS):
+            pid_action = self.pid_regs[idx].update(action[idx],
+                                                  self.new_observation[idx])
+            action[idx] = self.new_observation[idx] + pid_action
         return action
 
 
@@ -272,8 +285,17 @@ class NextroEnv(gym.Env):
         joint_accel = (curr_velocities - prev_velocities) / self._time_step
         #this is better form when calculating reward as it punishes sudden movements
         joint_accel = np.linalg.norm(joint_accel)
+        if self._time_elapsed == 100000*self._time_step:
+            print("PREV VELO:")
+            print(prev_velocities)
+            print("CURR VELO:")
+            print(curr_velocities)
+            print("DIFFERENCE")
+            print((curr_velocities - prev_velocities))
+            print("FINAL IS:")
+            print(joint_accel)
 
-        reward = dist_change - 0.05*joint_accel
+        reward = 1000*dist_change - 0.001*joint_accel  #- 0.005*joint_accel
 
         return reward
 
