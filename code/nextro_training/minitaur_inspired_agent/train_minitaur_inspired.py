@@ -8,7 +8,7 @@ Created on Sat Oct 31 11:27:59 2020
 
 # from class_utils import tflog2pandas
 
-from all.experiments import SingleEnvExperiment
+from all.experiments import SingleEnvExperiment, ParallelEnvExperiment
 from all.environments import GymEnvironment
 import nextro_env
 from sac_minitaur_inspired import sac_minitaur_inspired
