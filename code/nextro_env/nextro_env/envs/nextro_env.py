@@ -95,6 +95,7 @@ class NextroBot(rb.URDFBasedRobot):
                          baseOrientation,
                          fixed_base,
                          self_collision)
+        self.joint_ids = []
 
     # only called once when adding the robot urdf into environment
     # 3 fixed joints are removed from the list of joints and named dictionary
@@ -108,6 +109,13 @@ class NextroBot(rb.URDFBasedRobot):
                 del self.jdict[key]
                 self.ordered_joints.remove(fixed_joint)
 
+        for joint in JOINT_NAMES:
+            # should be hardcoded
+            self.joint_ids.append(self.jdict[joint].jointIndex)
+        p.setJointMotorControlArray(1,self.joint_ids,
+                                    controlMode=p.VELOCITY_CONTROL,
+                                    velocityGains=[0 for _ in range(NUM_JOINTS)])
+
     # by default called in the parent method after adding urdf, is only here to
     # prevent errors
     def calc_state(self):
@@ -116,21 +124,12 @@ class NextroBot(rb.URDFBasedRobot):
     # pybullet's Joint class doesn't accept parametrs for setting the p/vGains
     # it also dosesn't have setJointMotorControlArray-like bulk set
     def set_all_joints(self, joint_angles):
-        joint_ids = []
-        joint_coeficients = [0.1 for _ in range(NUM_JOINTS)]
-
-        for joint in JOINT_NAMES:
-            # should be hardcoded
-            joint_ids.append(self.jdict[joint].jointIndex)
-        # 1 is nextro's body ID hardcoded for now
-        # TODO see if it could be handled better
         p.setJointMotorControlArray(1,
-                                    joint_ids,
+                                    self.joint_ids,
                                     controlMode=p.POSITION_CONTROL,
                                     targetPositions=joint_angles,
                                     forces=[10 for _ in range(NUM_JOINTS)],
-                                    positionGains=joint_coeficients,
-                                    velocityGains=joint_coeficients)
+                                    positionGains=[0.3 for _ in range(NUM_JOINTS)])
 
 
 # defines all the methods that a gym environment has to provide
