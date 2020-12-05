@@ -301,7 +301,7 @@ class NextroEnv(gym.Env):
         # euclidean distance from the origin (x, y axis)
 
         #new_dist_travelled = np.linalg.norm([x, y])
-        new_dist_travelled = x
+        new_dist_travelled = x**2
         dist_change = new_dist_travelled - self._old_dist_travelled
         self._old_dist_travelled = new_dist_travelled
 
@@ -333,7 +333,10 @@ class NextroEnv(gym.Env):
             print("FINAL IS:")
             print(joint_accel)
 
-        reward = DIST_CONST*dist_change - ACCEL_CONST*joint_accel
+        reward = -1
+        if dist_change > 0:
+            reward = 1
+        #reward = DIST_CONST*dist_change - ACCEL_CONST*joint_accel
 
         return reward
 
