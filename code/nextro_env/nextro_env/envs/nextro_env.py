@@ -40,16 +40,19 @@ PREV_OBS_ON_INPUT = 5
 # from history
 OBSERVATION_SIZE = CURRENT_SENZOR_OUTPUT_SIZE + STORED_OBSERVATION_SIZE * PREV_OBS_ON_INPUT
 # if PIDs are to be used thsi determins [kp, ki, kd] parameters
-PID_PARAMS = [0.5, 0, 0.003]
+PID_PARAMS = [0.1, 0, 0.003]
 # when true PIDs with the above parameters will be applied to joints
 PID_ENABLED = False
 # enables/disables self-collision
 COLLISION = True
 # multiple of the dist eward
-DIST_CONST = 100
+DIST_CONST = 5000
 # multiple of the acceleration punishment
-ACCEL_CONST = 0.0001
+ACCEL_CONST = 0.01
 
+DIST_ANGLE_REWARD = False
+
+DIST_ANGLE_ACCEL_REWARD = True
 # listed to remove ambiguity when addressing joints
 JOINT_NAMES = ['left_back_hip_joint',
                'left_back_knee_joint',
@@ -96,6 +99,7 @@ class NextroBot(rb.URDFBasedRobot):
                          fixed_base,
                          self_collision)
         self.joint_ids = []
+        self.frame_count = 0
 
     # only called once when adding the robot urdf into environment
     # 3 fixed joints are removed from the list of joints and named dictionary
@@ -124,12 +128,14 @@ class NextroBot(rb.URDFBasedRobot):
     # pybullet's Joint class doesn't accept parametrs for setting the p/vGains
     # it also dosesn't have setJointMotorControlArray-like bulk set
     def set_all_joints(self, joint_angles):
+        self.frame_count += 1
+        pos_gain = np.interp(self.frame_count,[1,2e6],[0.1,0.5])
         p.setJointMotorControlArray(1,
                                     self.joint_ids,
                                     controlMode=p.POSITION_CONTROL,
                                     targetPositions=joint_angles,
                                     forces=[10 for _ in range(NUM_JOINTS)],
-                                    positionGains=[0.3 for _ in range(NUM_JOINTS)])
+                                    positionGains=[pos_gain for _ in range(NUM_JOINTS)])
 
 
 # defines all the methods that a gym environment has to provide
@@ -309,7 +315,7 @@ class NextroEnv(gym.Env):
             self.done = True
             self._init = False
             self._time_elapsed = 0
-            return -500
+            return -50
         # end episode if enough time has elapsed
         if self._time_elapsed >= self._episode_length:
             self.done = True
@@ -322,20 +328,28 @@ class NextroEnv(gym.Env):
         # this is better form when calculating reward as it punishes sudden movements
         joint_accel = np.linalg.norm(joint_accel)
         # TODO: some debugging info, disable in the end
-        if self._time_elapsed > 400000*self._time_step and self._time_elapsed < 401*self._time_step:
-            print("PREV VELO:")
-            print(prev_velocities)
-            print("CURR VELO:")
-            print(curr_velocities)
-            print("DIFFERENCE")
-            print((curr_velocities - prev_velocities))
-            print("FINAL IS:")
-            print(joint_accel)
 
-        reward = -1
-        if dist_change > 0:
-            reward = 1
-        #reward = DIST_CONST*dist_change - ACCEL_CONST*joint_accel
+        if DIST_ANGLE_REWARD:
+            reward = DIST_CONST*dist_change - (abs(yaw) + abs(pitch) + abs(roll))
+        if DIST_ANGLE_ACCEL_REWARD:
+            reward = DIST_CONST*dist_change \
+                - (abs(yaw) + abs(pitch) + abs(roll)) \
+                - ACCEL_CONST*joint_accel
+
+        # if self._time_elapsed > 400*self._time_step and self._time_elapsed < 401*self._time_step:
+        #     print("PREV VELO:")
+        #     print(prev_velocities)
+        #     print("CURR VELO:")
+        #     print(curr_velocities)
+        #     print("DIFFERENCE")
+        #     print((curr_velocities - prev_velocities))
+        #     print("FINAL IS:")
+        #     print(joint_accel)
+        #     print("YAW, PITCH, ROLL")
+        #     print(yaw, pitch, roll)
+
+
+
 
         return reward
 

@@ -43,12 +43,13 @@ def resolve_arguments():
                         "latest network in runs dir. Files that hold network weights must be named " +
                         "q_1.pt, q_2.pt, policy.pt, v.pt")
 
-    parser.add_argument('--episodes', type=int, required=True,
-                        help="Determines the numer of training/testing episodes. ")
+    parser.add_argument('--episodes', type=int, required=False, default=10,
+                        help="Determines the numer of training/testing episodes.")
+
+    parser.add_argument('--frames', type=int, required=False, default=0,
+                        help="Determins the number of training/testing frames.")
 
     args = parser.parse_args()
-    if args.episodes < 1:
-        Exception("Specify number of episodes at least 1!")
     return args
 
 def load_weights(location, exp):
@@ -83,11 +84,16 @@ if __name__ == '__main__':
     env = GymEnvironment('nextro-v0', args.device)
     agent = sac_minitaur_inspired(device=args.device)
     exp = SingleEnvExperiment(agent, env, render=args.render)
-
     if args.loc != '':
         exp = load_weights(args.loc, exp)
 
     if args.regime == 'train':
-        exp.train(episodes=args.episodes)
+        if args.frames != 0:
+            exp.train(frames=args.frames)
+        else:
+            exp.train(episodes=args.episodes)
     else:
-        exp.test(episodes=args.episodes)
+        if args.frames != 0:
+            exp.test(frames=args.frames)
+        else:
+            exp.test(episodes=args.episodes)
