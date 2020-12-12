@@ -265,7 +265,7 @@ class NextroEnv(gym.Env):
         y = y - self._original_position[1]
 
         #this should hopefully keep the robot locked to the X axis
-        new_dist_travelled = x**2 - y**2
+        new_dist_travelled = x**2
         dist_change = new_dist_travelled - self._old_dist_travelled
         self._old_dist_travelled = new_dist_travelled
 
