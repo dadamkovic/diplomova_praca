@@ -15,6 +15,7 @@ from sac_minitaur_inspired import sac_minitaur_inspired
 from argparse import ArgumentParser
 import os
 from torch import load as t_load
+import gym
 
 NET_FILES = ['policy.pt', 'q_1.pt', 'q_2.pt','v.pt']
 USAGE = """"The program launches the training of an agent in either pybullet GUI
@@ -31,7 +32,7 @@ def resolve_arguments():
                         help="Can be either 'cuda' (default) or 'cpu', will determine if pytorch can use CUDA cores.")
 
 #TODO: that latest thing isnt implemented yet but it would be cool to do it eventually
-    parser.add_argument('--regime', default='train', required=False,
+    parser.add_argument('--mode', default='train', required=False,
                         type=str, choices = ['train', 'test'],
                         help="Determines if agent starts training or just test a pretrained network. " +
                         "Both training and testing can pre-load a trained network if its location is specified " +
@@ -39,16 +40,20 @@ def resolve_arguments():
 
     parser.add_argument('--loc', default='', type=str, required=False,
                         help="When loading a pretrained network specify its location directory here " +
-                        "(needs to be set when using -regime 'test'). Use 'latest' when using the " +
+                        "(needs to be set when using --mode 'test'). Use 'latest' when using the " +
                         "latest network in runs dir. Files that hold network weights must be named " +
                         "q_1.pt, q_2.pt, policy.pt, v.pt")
 
-    parser.add_argument('--episodes', type=int, required=False, default=10,
-                        help="Determines the numer of training/testing episodes.")
+    parser.add_argument('--frames', type=int, required=False, default=2e6,
+                        help="Determins the number of training frames. Test "+
+                        "episodes can be set during the program's run.")
 
-    parser.add_argument('--frames', type=int, required=False, default=0,
-                        help="Determins the number of training/testing frames.")
+    parser.add_argument('--man_mod', default=False, required=False, action='store_true',
+                        help='Set this flag if you want to be presented with option'+
+                        ' for manual modification of settings.')
 
+    parser.add_argument("--logging", default=False, required=False, action='store_true',
+                        help="Set flag to enable advanced logging into the running terminal.")
     args = parser.parse_args()
     return args
 
@@ -78,22 +83,42 @@ def load_weights(location, exp):
     print('----------------------------')
     return exp
 
+def get_existing_runs():
+    return os.listdir('./runs')
+
+def get_new_run(old_folders):
+    curr_folders = os.listdir('./runs')
+    for folder in curr_folders:
+        if folder not in old_folders:
+            return folder
+    return None
+
+
 if __name__ == '__main__':
     args = resolve_arguments()
+    exist_runs = get_existing_runs()
 
-    env = GymEnvironment('nextro-v0', args.device)
-    agent = sac_minitaur_inspired(device=args.device)
-    exp = SingleEnvExperiment(agent, env, render=args.render)
+    env = gym.make('nextro-v0',
+                   set_loc=args.loc,
+                   man_mod=args.man_mod,
+                   logging=args.logging)
+    env = GymEnvironment(env,
+                         args.device)
+    agent = sac_minitaur_inspired(device=args.device,
+                                  last_frame=args.frames)
+    exp = SingleEnvExperiment(agent,
+                              env,
+                              render=args.render)
     if args.loc != '':
-        exp = load_weights(args.loc, exp)
+        exp = load_weights(args.loc,
+                           exp)
 
-    if args.regime == 'train':
-        if args.frames != 0:
-            exp.train(frames=args.frames)
-        else:
-            exp.train(episodes=args.episodes)
+    if args.mode == 'train':
+        exp.train(frames=args.frames)
     else:
-        if args.frames != 0:
-            exp.test(frames=args.frames)
-        else:
-            exp.test(episodes=args.episodes)
+        episodes = int(input('Testing episodes: '))
+        exp.test(episodes=episodes)
+
+    new_run_folder = get_new_run(exist_runs)
+
+    exp._env._env.store_settings(new_run_folder)
