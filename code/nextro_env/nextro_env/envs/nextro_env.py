@@ -258,17 +258,6 @@ class NextroEnv(gym.Env):
         x, y, z, a, b, c, d = self.robot.robot_body.get_pose()
         yaw, pitch, roll = p.getEulerFromQuaternion((a, b, c, d))
 
-        # original position might not have been exactly [0,0] so adjust
-        # current coordinates
-        x = x - self._original_position[0]
-
-        y = y - self._original_position[1]
-
-        #this should hopefully keep the robot locked to the X axis
-        new_dist_travelled = x**2
-        dist_change = new_dist_travelled - self._old_dist_travelled
-        self._old_dist_travelled = new_dist_travelled
-
         # if the robot turns over end episode and give bad reward
         if abs(yaw) > (np.pi/2):
             self.done = True
@@ -281,16 +270,36 @@ class NextroEnv(gym.Env):
             self._init = False
             self._time_elapsed = 0
 
+        # original position might not have been exactly [0,0] so adjust
+        # current coordinates
+        x = x - self._original_position[0]
+        y = y - self._original_position[1]
+
+        # distance reward besaed on change of distance between steps
+        if self.settings['DIFF_DIST_REW']:
+            if self.settings['PUNSIH_Y']:
+                new_dist_travelled = x**2 - y**2
+            else:
+                new_dist_travelled = x**2
+            dist_change = new_dist_travelled - self._old_dist_travelled
+            self._old_dist_travelled = new_dist_travelled
+            dist_param = dist_change
+
+        elif self.settings['TOTAL_DIST_REW']:
+            dist_param = x**2
+
         prev_velocities = self.obs_buffer[2][18:36]
         curr_velocities = self.new_observation[18:36]
         joint_accel = (curr_velocities - prev_velocities) / (3*self._time_step)
         # this is better form when calculating reward as it punishes sudden movements
         joint_accel = np.linalg.norm(joint_accel)
-        # TODO: some debugging info, disable in the end
 
-        reward = self.settings['DIST_CONST']*dist_change \
+
+        reward = self.settings['DIST_CONST']*dist_param \
             - self.settings['YPR_CONST']*(abs(yaw) + abs(pitch) + abs(roll)) \
             - self.settings['ACCEL_CONST']*joint_accel
+
+
 
         if self.steps_taken % 150 == 0 and self.logging:
             print("PREV VELO:")

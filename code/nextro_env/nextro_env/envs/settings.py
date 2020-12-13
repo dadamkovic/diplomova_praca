@@ -82,6 +82,9 @@ def get_default_settings(manual_modify=False):
     set_dict['YPR_CONST'] = YPR_CONST
     set_dict['POS_GAIN_FINAL'] = POS_GAIN_FINAL
     set_dict['POS_GAIN_START'] = POS_GAIN_START
+    set_dict['DIFF_DIST_REW'] = True
+    set_dict['PUNSIH_Y'] = False
+    set_dict['TOTAL_DIST_REW'] = False
     if manual_modify:
         set_dict = manually_mod_setting(set_dict)
     set_dict['JOINT_NAMES'] = JOINT_NAMES
@@ -107,6 +110,7 @@ def load_settings(loc):
     try:
         file_name_pic = os.path.join(loc, 'settings.p')
         settings = pickle.load(open(file_name_pic, 'rb'))
+        print("SETTINGS LOADED!")
         return settings
     except Exception:
         print("The location doesn't have a settings file. Skipping...")

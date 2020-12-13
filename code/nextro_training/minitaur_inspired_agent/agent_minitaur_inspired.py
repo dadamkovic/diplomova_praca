@@ -100,7 +100,7 @@ def get_new_run(old_folders):
 
 if __name__ == '__main__':
     args = resolve_arguments()
-    exist_runs = get_existing_runs()
+    previous_runs = set(get_existing_runs())
 
     env = gym.make('nextro-v0',
                    set_loc=args.loc,
@@ -113,9 +113,11 @@ if __name__ == '__main__':
     exp = SingleEnvExperiment(agent,
                               env,
                               render=args.render)
+    all_runs = set(get_existing_runs())
+    current_run_name = list(all_runs - previous_runs)[0]
     if args.loc != '':
         exp = load_weights(args.loc,
-                           exp)
+                            exp)
 
     if args.mode == 'train':
         if args.episodes != 0:
@@ -125,6 +127,4 @@ if __name__ == '__main__':
     else:
         exp.test(episodes=args.episodes)
 
-    new_run_folder = get_new_run(exist_runs)
-
-    exp._env._env.store_settings(new_run_folder)
+    exp._env._env.store_settings(current_run_name)
