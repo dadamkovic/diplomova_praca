@@ -48,6 +48,10 @@ def resolve_arguments():
                         help="Determins the number of training frames. Test "+
                         "episodes can be set during the program's run.")
 
+    parser.add_argument('--episodes', type=int, required=False, default=0,
+                        help="Determins the number of training episodes. Will" +
+                        "be used for training if specified (doesn't apply to tests).")
+
     parser.add_argument('--man_mod', default=False, required=False, action='store_true',
                         help='Set this flag if you want to be presented with option'+
                         ' for manual modification of settings.')
@@ -114,10 +118,12 @@ if __name__ == '__main__':
                            exp)
 
     if args.mode == 'train':
-        exp.train(frames=args.frames)
+        if args.episodes != 0:
+            exp.train(episodes=args.episodes)
+        else:
+            exp.train(frames=args.frames)
     else:
-        episodes = int(input('Testing episodes: '))
-        exp.test(episodes=episodes)
+        exp.test(episodes=args.episodes)
 
     new_run_folder = get_new_run(exist_runs)
 
