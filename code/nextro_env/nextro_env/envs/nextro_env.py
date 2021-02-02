@@ -78,7 +78,7 @@ class NextroBot(rb.URDFBasedRobot):
         pos_gain = np.interp(self.frame_count, [1, 2e6], pos_range)
 
         num_joints = self.settings['NUM_JOINTS']
-        pos_gains = [pos_gain for _ in range(num_joints)]
+        pos_gains = [0.15 for _ in range(num_joints)]
         p.setJointMotorControlArray(1,
                                     self.joint_ids,
                                     controlMode=p.POSITION_CONTROL,
@@ -90,7 +90,8 @@ class NextroBot(rb.URDFBasedRobot):
 # defines all the methods that a gym environment has to provide
 class NextroEnv(gym.Env):
     def __init__(self, **kwargs):
-        self.settings = load_settings(kwargs['set_loc'])
+        self.settings = load_settings(loc = kwargs['set_loc'],
+                                      manual_modify = kwargs['man_mod'])
         if self.settings == {}:
             self.settings = get_default_settings(kwargs['man_mod'])
 
@@ -277,7 +278,7 @@ class NextroEnv(gym.Env):
 
         # distance reward besaed on change of distance between steps
         if self.settings['DIFF_DIST_REW']:
-            if self.settings['PUNSIH_Y']:
+            if self.settings['PUNISH_Y']:
                 new_dist_travelled = x**2 - y**2
             else:
                 new_dist_travelled = x**2

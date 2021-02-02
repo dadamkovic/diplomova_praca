@@ -9,6 +9,9 @@ import pickle
 import os
 import git
 from pprint import pprint
+from consolemenu import *
+from consolemenu.items import *
+
 # default maximal length in seconds of a single episode
 DEFAULT_MAX_TIME = 20
 
@@ -83,10 +86,10 @@ def get_default_settings(manual_modify=False):
     set_dict['POS_GAIN_FINAL'] = POS_GAIN_FINAL
     set_dict['POS_GAIN_START'] = POS_GAIN_START
     set_dict['DIFF_DIST_REW'] = True
-    set_dict['PUNSIH_Y'] = False
+    set_dict['PUNISH_Y'] = False
     set_dict['TOTAL_DIST_REW'] = False
     if manual_modify:
-        set_dict = manually_mod_setting(set_dict)
+        set_dict = manually_mod_settings(set_dict)
     set_dict['JOINT_NAMES'] = JOINT_NAMES
     return set_dict
 
@@ -106,42 +109,92 @@ def save_default_settings(settings, loc):
         except Exception:
             print('Failed to fetch GIT INFO!')
 
-def load_settings(loc):
+def isInt(number):
+    tempN = int(number)
+    if (number - tempN) > 0:
+        return False
+    return True
+
+def manually_mod_settings(set_dict):
+    menu = ConsoleMenu("Tune parameters", "([] brackets show original value)")
+    menu_items = []
+    for idx, (key, val) in enumerate(set_dict.items()):
+
+        desc = f"{key}[{val}]"
+        prompt = f"{key}[{val}] : "
+
+        def prompt_func(text, set_key):
+            value = input(text)
+            if set_key in ['PID_ENABLED','COLLISION']:
+                set_dict[set_key] = True if value.startswith(('t','T')) else False
+            elif set_key == 'PID_PARAMS':
+                set_dict[set_key] = [float(x) for x in value.replace(' ',',').split(',')]
+            elif isInt(float(value)):
+                set_dict[set_key] = int(value)
+            else:
+                set_dict[set_key] = float(value)
+            return value
+
+        if key in ['PID_ENABLED','COLLISION','TOTAL_DIST_REW','DIFF_DIST_REW','PUNISH_Y']:
+            tmp = SelectionMenu(['True','False'])
+            desc = f"{key}[{val}]"
+            menu_items.append(SubmenuItem(desc, tmp, menu))
+        elif key == 'PID_PARAMS':
+            prompt = "PID <P I D>: "
+            menu_items.append(FunctionItem(desc, prompt_func, [prompt, key]))
+        else:
+            menu_items.append(FunctionItem(desc, prompt_func, [prompt, key]))
+        menu.append_item(menu_items[idx])
+
+    def print_sett():
+        # for m_entry, dict_key in zip(menu_items, set_dict.keys()):
+        #     if m_entry.get_return() is not None:
+        #         set_dict[dict_key] = float(m_entry.get_return())
+        for key, item in set_dict.items():
+            print(f"{key} : {item}")
+        input('Press any key to return')
+
+    menu.append_item(FunctionItem("Print all", print_sett))
+    menu.show()
+    return set_dict
+# def manually_mod_settings(set_dict):
+#     print("Current settings are:")
+#     print('---------------------------')
+#     pprint(set_dict)
+#     while True:
+#         user_choice = input('Modify?(Y/N)').lower()
+#         if user_choice in ['y', 'n']:
+#             break
+#         else:
+#             print("(Y/N)")
+#     if user_choice == 'n':
+#         return set_dict
+#     print('-------------------')
+#     print('type q/Q to exit')
+#     print('-------------------')
+#     while True:
+#         sel_key = input('key:value   > ')
+#         if sel_key.lower() == 'q':
+#             return set_dict
+#         key, value = sel_key.split(':')
+#         if key in ['PID_ENABLED','COLLISION']:
+#             set_dict[key] = True if value.startswith(('t','T')) else False
+#         elif key == 'PID_PARAMS':
+#             set_dict[key] = [float(x) for x in value.split(',')]
+#         elif key in ['POS_GAIN_START','POS_GAIN_FINAL','YPR_CONST',
+#                      'ACCEL_CONST','DIST_CONST','DEFAULT_MAX_TIME']:
+#             set_dict[key] = float(value)
+#         else:
+#             set_dict[key] = int(value)
+
+def load_settings(loc, manual_modify=False):
     try:
         file_name_pic = os.path.join(loc, 'settings.p')
         settings = pickle.load(open(file_name_pic, 'rb'))
         print("SETTINGS LOADED!")
+        if manual_modify:
+            settings = manually_mod_settings(settings)
         return settings
     except Exception:
         print("The location doesn't have a settings file. Skipping...")
         return {}
-
-def manually_mod_setting(set_dict):
-    print("Current settings are:")
-    print('---------------------------')
-    pprint(set_dict)
-    while True:
-        user_choice = input('Modify?(Y/N)').lower()
-        if user_choice in ['y', 'n']:
-            break
-        else:
-            print("(Y/N)")
-    if user_choice == 'n':
-        return set_dict
-    print('-------------------')
-    print('type q/Q to exit')
-    print('-------------------')
-    while True:
-        sel_key = input('key:value   > ')
-        if sel_key.lower() == 'q':
-            return set_dict
-        key, value = sel_key.split(':')
-        if key in ['PID_ENABLED','COLLISION']:
-            set_dict[key] = True if value.startswith(('t','T')) else False
-        elif key == 'PID_PARAMS':
-            set_dict[key] = [float(x) for x in value.split(',')]
-        elif key in ['POS_GAIN_START','POS_GAIN_FINAL','YPR_CONST',
-                     'ACCEL_CONST','DIST_CONST','DEFAULT_MAX_TIME']:
-            set_dict[key] = float(value)
-        else:
-            set_dict[key] = int(value)
