@@ -12,16 +12,9 @@ from torch import load as t_load
 #wirghts of the networks will be saved in files named like this
 NET_FILES = ['policy.pt', 'q_1.pt', 'q_2.pt','v.pt']
 
+#lists all folder in /runs (used to rename the file to more sensible name)
 def get_existing_runs():
     return os.listdir('./runs')
-
-#TODO: most liekly not needed anymore
-def get_new_run(old_folders):
-    curr_folders = os.listdir('./runs')
-    for folder in curr_folders:
-        if folder not in old_folders:
-            return folder
-    return None
 
 #loads the pretrained weights into the model
 #TODO: find why the loaded weights cannot be trained further only observed
@@ -29,13 +22,12 @@ def load_weights(location, exp):
     try:
         filenames = os.listdir(location)
     except FileNotFoundError():
-        raise Exception("You have to specify correct directory path!")
+        raise FileNotFoundError("You have to specify correct directory path!")
 
     for net_file in NET_FILES:
         if net_file not in filenames:
-            raise Exception("The location you specified does not include the network files. " +
+            raise FileNotFoundError("The location you specified does not include the network files. " +
                           "Use --help for more info.")
-
 
     nn_paths = []
     for weight_file in NET_FILES:
@@ -61,12 +53,12 @@ def resolve_arguments(parser):
                         type=str, choices = ['cuda', 'cpu'],
                         help="Can be either 'cuda' (default) or 'cpu', will determine if pytorch can use CUDA cores.")
 
-    parser.add_argument('--mode', default='train', required=False,
+    parser.add_argument('--mode', required=True,
                         type=str, choices = ['train', 'test'],
                         help="Determines if agent starts training or just test a pretrained network. " +
                         "Both training and testing can pre-load a trained network if its location is specified " +
                         "using the -loc flag.")
-
+    #the latest feature not yet implemented
     parser.add_argument('--loc', default='', type=str, required=False,
                         help="When loading a pretrained network specify its location directory here " +
                         "(needs to be set when using --mode 'test'). Use 'latest' when using the " +
@@ -74,12 +66,14 @@ def resolve_arguments(parser):
                         "q_1.pt, q_2.pt, policy.pt, v.pt")
 
     parser.add_argument('--frames', type=int, required=False, default=2e6,
-                        help="Determins the number of training frames. Test "+
-                        "episodes can be set during the program's run.")
+                        help="Determins the number of training frames. Testing "+
+                        "with FRAMES specified will not work see --episodes!")
 
     parser.add_argument('--episodes', type=int, required=False, default=0,
-                        help="Determins the number of training episodes. Will" +
-                        "be used for training if specified (doesn't apply to tests).")
+                        help="Determins the number of training/testing episodes. If " +
+                        "both episodes AND frames are specified episodes will"+
+                        " be used prefferentaily. Episodes HAVE to be used "+
+                        "for testing.")
 
     parser.add_argument('--man_mod', default=False, required=False, action='store_true',
                         help='Set this flag if you want to be presented with option'+

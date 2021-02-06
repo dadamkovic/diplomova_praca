@@ -3,3 +3,4 @@ all
 gym
 git
 gitpython
+console-menu

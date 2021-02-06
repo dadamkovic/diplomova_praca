@@ -29,6 +29,7 @@ class NextroBot(rb.URDFBasedRobot):
                  model_urdf,
                  robot_name,
                  settings,
+                 com_args,
                  basePosition=[0, 0, 0.1],
                  baseOrientation=[0, 0, 0, 1],
                  fixed_base=False):
@@ -42,6 +43,16 @@ class NextroBot(rb.URDFBasedRobot):
                          baseOrientation=baseOrientation)
         self.joint_ids = []
         self.frame_count = 0
+        self.com_args = com_args
+
+        final_frame = 0
+        if self.com_args.mode == 'train':
+            if self.com_args.frames != 0:
+                final_frame = self.com_args.frames
+            else:
+                final_frame = self.com_args.episodes * \
+                    self.settings['DEFAULT_MAX_TIME']/self.settings['FRAMES_PER_SECOND']
+        self.final_frame = final_frame
 
     # only called once when adding the robot urdf into environment
     # 3 fixed joints are removed from the list of joints and named dictionary
@@ -57,7 +68,6 @@ class NextroBot(rb.URDFBasedRobot):
                 self.ordered_joints.remove(fixed_joint)
 
         for joint in joint_names:
-            # should be hardcoded
             self.joint_ids.append(self.jdict[joint].jointIndex)
         p.setJointMotorControlArray(1,self.joint_ids,
                                     controlMode=p.VELOCITY_CONTROL,
@@ -75,10 +85,17 @@ class NextroBot(rb.URDFBasedRobot):
         pos_gain_start = self.settings['POS_GAIN_START']
         pos_gain_final = self.settings['POS_GAIN_FINAL']
         pos_range = [pos_gain_start, pos_gain_final]
-        pos_gain = np.interp(self.frame_count, [1, 2e6], pos_range)
+
+        if self.com_args.mode == 'train':
+            pos_gain = np.interp(self.frame_count,
+                                 [1, self.final_frame],
+                                 pos_range)
+        else:
+            pos_gain = pos_gain_final
 
         num_joints = self.settings['NUM_JOINTS']
-        pos_gains = [0.15 for _ in range(num_joints)]
+        pos_gains = [pos_gain for _ in range(num_joints)]
+        #the forces are set a bit arbitratily
         p.setJointMotorControlArray(1,
                                     self.joint_ids,
                                     controlMode=p.POSITION_CONTROL,
@@ -90,14 +107,17 @@ class NextroBot(rb.URDFBasedRobot):
 # defines all the methods that a gym environment has to provide
 class NextroEnv(gym.Env):
     def __init__(self, **kwargs):
-        self.settings = load_settings(loc = kwargs['set_loc'],
-                                      manual_modify = kwargs['man_mod'])
+        #load settings from supplied file
+        self.settings = load_settings(loc=kwargs['c_args'].loc,
+                                      manual_modify=kwargs['c_args'].man_mod)
+        #if no file was supplied we load default settings manualy or automatically
         if self.settings == {}:
-            self.settings = get_default_settings(kwargs['man_mod'])
+            self.settings = get_default_settings(kwargs['c_args'].man_mod)
 
         self.robot = NextroBot(model_urdf=NEXTRO_LOC,
                                robot_name='nextro',
                                settings=self.settings,
+                               com_args=kwargs['c_args'],
                                basePosition=[0, 0, 0.1],
                                baseOrientation=[0, 0, 0, 1])
 
@@ -116,6 +136,7 @@ class NextroEnv(gym.Env):
         self.__name__ = 'Nextro'
         self._episode_length = self.settings['DEFAULT_MAX_TIME']
 
+        self.c_args = kwargs['c_args']
         # set true after reset, set to false after episode ends
         self._init = False
         # keeps track of how long an episode has been runnning
@@ -131,9 +152,9 @@ class NextroEnv(gym.Env):
 
         self.pid_regs = []
         self.steps_taken = 0
-        self.logging = kwargs['logging']
+        self.logging = kwargs['c_args'].logging
 
-    # called first regardes of render mode, shouldn not have to be called again
+    # called first regardes of render mode, should not have to be called again
     # if the mode is not 'human'
     def render(self, **kwargs):
         if self.client is not None:
@@ -163,6 +184,16 @@ class NextroEnv(gym.Env):
         self._init = True
         self.done = False
         self.steps_taken = 0
+        self._time_elapsed = 0
+        self._old_dist_travelled = 0
+
+        # during testing there is no point in making the episodes last different
+        # times
+        if self.c_args['mode'] == 'train':
+            # frames should be used when these default times differ
+            self._episode_length = np.random.randint(self.settings['DEFAULT_MIN_TIME'],
+                                                     self.settings['DEFAULT_MAX_TIME'])
+
         # render doesn't have to be called in direct mode by user but it should
         # still run at least once
         if self.render_env is None:
@@ -184,11 +215,6 @@ class NextroEnv(gym.Env):
             # move camera closer to robot
             p.resetDebugVisualizerCamera(1.2, -145, -38, [0, 0, 0])
             p.setTimeStep(self._time_step, self.client)
-
-        # reset episode timer
-        self._time_elapsed = 0
-        # reset baseline position
-        self._old_dist_travelled = 0
 
         obs_size = self.settings['STORED_OBSERVATION_SIZE']
         prev_obs = self.settings['PREV_OBS_ON_INPUT']
@@ -275,6 +301,8 @@ class NextroEnv(gym.Env):
         # current coordinates
         x = x - self._original_position[0]
         y = y - self._original_position[1]
+        num_joints = self.settings['NUM_JOINTS']
+        curr_velocities = self.new_observation[num_joints:(2*num_joints)]
 
         # distance reward besaed on change of distance between steps
         if self.settings['DIFF_DIST_REW']:
@@ -289,18 +317,20 @@ class NextroEnv(gym.Env):
         elif self.settings['TOTAL_DIST_REW']:
             dist_param = x**2
 
-        prev_velocities = self.obs_buffer[2][18:36]
-        curr_velocities = self.new_observation[18:36]
-        joint_accel = (curr_velocities - prev_velocities) / (3*self._time_step)
+
+        if self.settings['PREV_OBS_ON_INPUT'] > 1:
+            prev_obs = self.settings['PREV_OBS_ON_INPUT']
+            prev_velocities = self.obs_buffer[prev_obs-1][num_joints:(2*num_joints)]
+            joint_accel = (curr_velocities - prev_velocities) / (prev_obs*self._time_step)
+        else:
+            joint_accel = curr_velocities
+
         # this is better form when calculating reward as it punishes sudden movements
         joint_accel = np.linalg.norm(joint_accel)
-
 
         reward = self.settings['DIST_CONST']*dist_param \
             - self.settings['YPR_CONST']*(abs(yaw) + abs(pitch) + abs(roll)) \
             - self.settings['ACCEL_CONST']*joint_accel
-
-
 
         if self.steps_taken % 150 == 0 and self.logging:
             print("PREV VELO:")
@@ -332,9 +362,11 @@ class NextroEnv(gym.Env):
             joint_angles.append(joint_handle.get_position())
             joint_velocities.append(joint_handle.get_velocity())
 
+        #the fixed [0,0,0,0] will later be used as control bits
         self.new_observation = np.concatenate((joint_angles,
                                                joint_velocities,
-                                               body_angles))
+                                               body_angles,
+                                               [1,0,0,0]))
         unrolled_buffer = np.ndarray.flatten(np.array(self.obs_buffer))
 
         return np.concatenate((self.new_observation, unrolled_buffer))
@@ -358,9 +390,9 @@ class NextroEnv(gym.Env):
         while new_name in dir_names:
             new_name = 'run_' + str(i)
             i += 1
-        new_name = os.path.join('runs',new_name)
+        new_name = os.path.join('runs', new_name)
         shutil.move(old_name, new_name)
         save_default_settings(self.settings, new_name)
         print('-------------------')
-        print('Settigns saved!')
+        print(f'Settings saved tp {new_name}')
         print('-------------------')
