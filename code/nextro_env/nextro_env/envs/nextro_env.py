@@ -189,7 +189,7 @@ class NextroEnv(gym.Env):
 
         # during testing there is no point in making the episodes last different
         # times
-        if self.c_args['mode'] == 'train':
+        if self.c_args.mode == 'train':
             # frames should be used when these default times differ
             self._episode_length = np.random.randint(self.settings['DEFAULT_MIN_TIME'],
                                                      self.settings['DEFAULT_MAX_TIME'])
