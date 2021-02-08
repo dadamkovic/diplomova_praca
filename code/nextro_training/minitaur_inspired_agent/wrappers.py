@@ -28,19 +28,10 @@ properly. THe resolution of the saved data can be tuned by the constant above.
 class ApproximationCtrlRep(Approximation):
     def __init__(
             self,
-            model,
-            optimizer,
-            checkpointer=None,
-            clip_grad=0,
-            loss_scaling=1,
-            name='approximation',
-            scheduler=None,
-            target=None,
-            writer=DummyWriter(),
+            *args,
             **kwargs
     ):
-        super().__init__(model, optimizer, checkpointer, clip_grad,loss_scaling,
-                     name, scheduler, target, writer,**kwargs)
+        super().__init__(*args, **kwargs)
         self._num_steps = 0
 
     def reinforce(self, loss):
@@ -98,8 +89,8 @@ class QContinuousCtrlRep(ApproximationCtrlRep):
     ):
         model = QContinuousModule(model)
         super().__init__(
-            model,
-            optimizer,
+            model=model,
+            optimizer=optimizer,
             name=name,
             **kwargs
         )
@@ -114,8 +105,8 @@ class VNetworkCtrlRep(ApproximationCtrlRep):
     ):
         model = VModule(model)
         super().__init__(
-            model,
-            optimizer,
+            model=model,
+            optimizer=optimizer,
             name=name,
             **kwargs
         )
@@ -145,26 +136,11 @@ class SoftDeterministicPolicyCtrlRep(ApproximationCtrlRep):
     ):
         model = SoftDeterministicPolicyNetwork(model, space)
         self._inner_model = model
-        super().__init__(model, optimizer, name=name, **kwargs)
+        super().__init__(model=model, optimizer=optimizer, name=name, **kwargs)
 
 class SACCtrlRep(SAC):
-    def __init__(self, policy, q_1, q_2, v, replay_buffer, discount_factor=0.99,
-                 entropy_target=-2., lr_temperature=1e-4, minibatch_size=32,
-                 replay_start_size=5000, temperature_initial=0.1,
-                 update_frequency=1, writer=DummyWriter()):
-        super().__init__(policy,
-                         q_1=q_1,
-                         q_2=q_2,
-                         v=v,
-                         replay_buffer=replay_buffer,
-                         discount_factor=discount_factor,
-                         entropy_target=-entropy_target,
-                         lr_temperature=lr_temperature,
-                         minibatch_size=minibatch_size,
-                         replay_start_size=replay_start_size,
-                         temperature_initial=temperature_initial,
-                         update_frequency=update_frequency,
-                         writer=writer)
+    def __init__(self, *args,**kwargs):
+        super().__init__(*args, **kwargs)
         self._num_steps = 0
 
     def _train(self):

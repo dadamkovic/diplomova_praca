@@ -123,11 +123,11 @@ def sac_minitaur_inspired(
         )
 
         return TimeFeature(SACCtrlRep(
-            policy,
-            q_1,
-            q_2,
-            v,
-            replay_buffer,
+            policy=policy,
+            q_1=q_1,
+            q_2=q_2,
+            v=v,
+            replay_buffer=replay_buffer,
             temperature_initial=temperature_initial,
             entropy_target=(-env.action_space.shape[0] * entropy_target_scaling),
             lr_temperature=lr_temperature,
