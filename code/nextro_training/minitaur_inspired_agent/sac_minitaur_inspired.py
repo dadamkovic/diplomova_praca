@@ -1,12 +1,15 @@
 from torch.optim import Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR
-from all.agents import SAC
+#from all.agents import SAC
 from all.approximation import QContinuous, PolyakTarget, VNetwork
 from all.bodies import TimeFeature
 from all.logging import DummyWriter
-from all.policies.soft_deterministic import SoftDeterministicPolicy
+#from all.policies.soft_deterministic import SoftDeterministicPolicy
 from all.memory import ExperienceReplayBuffer
 from models import fc_q, fc_v, fc_soft_policy
+from wrappers import QContinuousCtrlRep, SACCtrlRep, VNetworkCtrlRep, SoftDeterministicPolicyCtrlRep
+
+
 
 
 def sac_minitaur_inspired(
@@ -63,7 +66,7 @@ def sac_minitaur_inspired(
 
         q_1_model = q1_model_constructor(env).to(device)
         q_1_optimizer = Adam(q_1_model.parameters(), lr=lr_q)
-        q_1 = QContinuous(
+        q_1 = QContinuousCtrlRep(
             q_1_model,
             q_1_optimizer,
             scheduler=CosineAnnealingLR(
@@ -76,7 +79,7 @@ def sac_minitaur_inspired(
 
         q_2_model = q2_model_constructor(env).to(device)
         q_2_optimizer = Adam(q_2_model.parameters(), lr=lr_q)
-        q_2 = QContinuous(
+        q_2 = QContinuousCtrlRep(
             q_2_model,
             q_2_optimizer,
             scheduler=CosineAnnealingLR(
@@ -89,7 +92,7 @@ def sac_minitaur_inspired(
 
         v_model = v_model_constructor(env).to(device)
         v_optimizer = Adam(v_model.parameters(), lr=lr_v)
-        v = VNetwork(
+        v = VNetworkCtrlRep(
             v_model,
             v_optimizer,
             scheduler=CosineAnnealingLR(
@@ -103,7 +106,7 @@ def sac_minitaur_inspired(
 
         policy_model = policy_model_constructor(env).to(device)
         policy_optimizer = Adam(policy_model.parameters(), lr=lr_pi)
-        policy = SoftDeterministicPolicy(
+        policy = SoftDeterministicPolicyCtrlRep(
             policy_model,
             policy_optimizer,
             env.action_space,
@@ -119,7 +122,7 @@ def sac_minitaur_inspired(
             device=device
         )
 
-        return TimeFeature(SAC(
+        return TimeFeature(SACCtrlRep(
             policy,
             q_1,
             q_2,
