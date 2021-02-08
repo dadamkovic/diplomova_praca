@@ -37,9 +37,10 @@ class ApproximationCtrlRep(Approximation):
             scheduler=None,
             target=None,
             writer=DummyWriter(),
+            **kwargs
     ):
         super().__init__(model, optimizer, checkpointer, clip_grad,loss_scaling,
-                     name, scheduler, target, writer,)
+                     name, scheduler, target, writer,**kwargs)
         self._num_steps = 0
 
     def reinforce(self, loss):
