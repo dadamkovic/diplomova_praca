@@ -191,7 +191,7 @@ class NextroEnv(gym.Env):
         # times
         if self.c_args.mode == 'train':
             # frames should be used when these default times differ
-            self._episode_length = np.random.randint(self.settings['DEFAULT_MIN_TIME'],
+            self._episode_length = np.random.uniform(self.settings['DEFAULT_MIN_TIME'],
                                                      self.settings['DEFAULT_MAX_TIME'])
 
         # render doesn't have to be called in direct mode by user but it should
