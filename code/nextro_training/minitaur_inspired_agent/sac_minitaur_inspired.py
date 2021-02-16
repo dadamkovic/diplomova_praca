@@ -20,7 +20,7 @@ def sac_minitaur_inspired(
         # Adam optimizer settings
         lr_q=1e-3,
         lr_v=1e-3,
-        lr_pi=1e-3,
+        lr_pi=1e-4,
         # Training settings
         minibatch_size=100,
         update_frequency=2,
