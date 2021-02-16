@@ -73,6 +73,25 @@ class NextroBot(rb.URDFBasedRobot):
                                     controlMode=p.VELOCITY_CONTROL,
                                     velocityGains=[0 for _ in range(num_joints)])
 
+    def get_motor_torques(self):
+        torques = p.getJointStates(1, self.joint_ids)[-1]
+        return torques
+
+    def get_motor_velocities(self):
+        velocities = p.getJointStates(1, self.joint_ids)[1]
+        return velocities
+
+    def get_motor_positions(self):
+        positions = p.getJointStates(1, self.joint_ids)[0]
+        return positions
+
+    def get_motor_all(self):
+        joint_info = p.getJointStates(1, self.joint_ids)
+        positions = [x[0]for x in joint_info]
+        velocities = [x[1]for x in joint_info]
+        torques = [x[3]for x in joint_info]
+        return [positions, velocities, torques]
+
     # by default called in the parent method after adding urdf, is only here to
     # prevent errors
     def calc_state(self):
@@ -154,6 +173,12 @@ class NextroEnv(gym.Env):
         self.steps_taken = 0
         self.logging = kwargs['c_args'].logging
 
+        self._objective_weights = [self.settings['FORWARD_WEIGHT'],
+                                   self.settings['ENERGY_WEIGHT'],
+                                   self.settings['SHAKE_WEIGHT'],
+                                   self.settings['DRIFT_WEIGHT']
+                                   ]
+
     # called first regardes of render mode, should not have to be called again
     # if the mode is not 'human'
     def render(self, **kwargs):
@@ -203,6 +228,7 @@ class NextroEnv(gym.Env):
         if self.robot.robot_body is not None:
             self.robot.robot_body.reset_position(self._original_position)
             self.robot.robot_body.reset_orientation(self._original_orientation)
+            self._prev_position = self._original_position
             self._reset_joints()
         else:
             p.resetSimulation(self.client)
@@ -211,6 +237,7 @@ class NextroEnv(gym.Env):
             self.robot.reset(p)
             # see above how these are used
             self._original_position = self.robot.robot_body.get_position()
+            self._prev_position = self._original_position
             self._original_orientation = self.robot.robot_body.get_orientation()
             # move camera closer to robot
             p.resetDebugVisualizerCamera(1.2, -145, -38, [0, 0, 0])
@@ -299,48 +326,31 @@ class NextroEnv(gym.Env):
 
         # original position might not have been exactly [0,0] so adjust
         # current coordinates
-        x = x - self._original_position[0]
-        y = y - self._original_position[1]
+        forward_reward = x - self._prev_position[0]
+        drift_reward = -abs(y - self._prev_position[1])
+
+        self._prev_position = [x, y]
         num_joints = self.settings['NUM_JOINTS']
-        curr_velocities = self.new_observation[num_joints:(2*num_joints)]
 
-        # distance reward besaed on change of distance between steps
-        if self.settings['DIFF_DIST_REW']:
-            if self.settings['PUNISH_Y']:
-                new_dist_travelled = x**2 - y**2
-            else:
-                new_dist_travelled = x**2
-            dist_change = new_dist_travelled - self._old_dist_travelled
-            self._old_dist_travelled = new_dist_travelled
-            dist_param = dist_change
+        _, curr_velocities, curr_torques = self.robot.get_motor_all()
+        if len(curr_torques) != num_joints:
+            raise(Exception("Something is not right with torques"))
+        energy_reward = -np.abs(np.dot(curr_torques,
+                               curr_velocities))*self._time_step
 
-        elif self.settings['TOTAL_DIST_REW']:
-            dist_param = x**2
+        local_up_vect = p.getMatrixFromQuaternion((a,b,c,d))[6:]
+        shake_reward = -abs(np.dot(np.asarray([1,1,0]),
+                                   np.asarray(local_up_vect)
+                                   )
+                            )
 
-
-        if self.settings['PREV_OBS_ON_INPUT'] > 1:
-            prev_obs = self.settings['PREV_OBS_ON_INPUT']
-            prev_velocities = self.obs_buffer[prev_obs-1][num_joints:(2*num_joints)]
-            joint_accel = (curr_velocities - prev_velocities) / (prev_obs*self._time_step)
-        else:
-            joint_accel = curr_velocities
-
-        # this is better form when calculating reward as it punishes sudden movements
-        joint_accel = np.linalg.norm(joint_accel)
-
-        reward = self.settings['DIST_CONST']*dist_param \
-            - self.settings['YPR_CONST']*(abs(yaw) + abs(pitch) + abs(roll)) \
-            - self.settings['ACCEL_CONST']*joint_accel
+        objectives = [forward_reward, energy_reward, drift_reward, shake_reward]
+        weighted_objectives = [o*w for o,w in zip(objectives, self._objective_weights)]
+        reward = sum(weighted_objectives)
 
         if self.steps_taken % 150 == 0 and self.logging:
-            print("PREV VELO:")
-            print(prev_velocities)
             print("CURR VELO:")
             print(curr_velocities)
-            print("DIFFERENCE")
-            print((curr_velocities - prev_velocities))
-            print("FINAL IS:")
-            print(joint_accel)
             print("YAW, PITCH, ROLL")
             print(yaw, pitch, roll)
             print('REWARD')
@@ -354,13 +364,7 @@ class NextroEnv(gym.Env):
             raise Exception('Initialize the environment first')
         _, _, _, a, b, c, d = self.robot.robot_body.get_pose()
         body_angles = p.getEulerFromQuaternion((a, b, c, d))
-        joint_angles = []
-        joint_velocities = []
-
-        for joint in self.settings['JOINT_NAMES']:
-            joint_handle = self.robot.jdict[joint]
-            joint_angles.append(joint_handle.get_position())
-            joint_velocities.append(joint_handle.get_velocity())
+        joint_angles, joint_velocities, _ = self.robot.get_motor_all()
 
         #the fixed [0,0,0,0] will later be used as control bits
         self.new_observation = np.concatenate((joint_angles,

@@ -63,12 +63,13 @@ PREV_OBS_ON_INPUT = 5
 # if PIDs are to be used thsi determins [kp, ki, kd] parameters
 PID_PARAMS = [0.1, 0, 0.003]
 # multiple of the dist eward
-DIST_CONST = 5000
-# multiple of the acceleration punishment
-ACCEL_CONST = 0.01
+FORWARD_WEIGHT = 1
+ENERGY_WEIGHT = 0.005
+DRIFT_WEIGHT = 0
+SHAKE_WEIGHT = 0
 POS_GAIN_START = 0.1
 POS_GAIN_FINAL = 0.2
-YPR_CONST = 1
+
 
 
 def add_non_user_settings(set_dict):
@@ -100,15 +101,14 @@ def get_default_settings(manual_modify=False):
     set_dict['PREV_OBS_ON_INPUT'] = PREV_OBS_ON_INPUT
     set_dict['PID_ENABLED'] = False
     set_dict['PID_PARAMS'] = PID_PARAMS
-    set_dict['DIST_CONST'] = DIST_CONST
-    set_dict['ACCEL_CONST'] = ACCEL_CONST
-    set_dict['YPR_CONST'] = YPR_CONST
+    set_dict['FORWARD_WEIGHT'] = FORWARD_WEIGHT
+    set_dict['ENERGY_WEIGHT'] = ENERGY_WEIGHT
+    set_dict['DRIFT_WEIGHT'] = DRIFT_WEIGHT
+    set_dict['SHAKE_WEIGHT'] = SHAKE_WEIGHT
     set_dict['POS_GAIN_FINAL'] = POS_GAIN_FINAL
     set_dict['POS_GAIN_START'] = POS_GAIN_START
     set_dict['COLLISION'] = True
-    set_dict['DIFF_DIST_REW'] = True
     set_dict['PUNISH_Y'] = False
-    set_dict['TOTAL_DIST_REW'] = False
     if manual_modify:
         set_dict = manually_mod_settings(set_dict)
 
@@ -192,7 +192,7 @@ def manually_mod_settings(set_dict):
                 set_dict[set_key] = float(value)
             return value
 
-        if key in ['PID_ENABLED','COLLISION','TOTAL_DIST_REW','DIFF_DIST_REW','PUNISH_Y']:
+        if key in ['PID_ENABLED','COLLISION']:
             tmp = SelectionMenu(['True','False'])
             desc = f"{key}[{val}]"
             menu_items.append(SubmenuItemMod(desc, tmp, menu))
