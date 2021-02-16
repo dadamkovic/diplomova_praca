@@ -333,8 +333,6 @@ class NextroEnv(gym.Env):
         num_joints = self.settings['NUM_JOINTS']
 
         _, curr_velocities, curr_torques = self.robot.get_motor_all()
-        if len(curr_torques) != num_joints:
-            raise(Exception("Something is not right with torques"))
         energy_reward = -np.abs(np.dot(curr_torques,
                                curr_velocities))*self._time_step
 
@@ -355,7 +353,6 @@ class NextroEnv(gym.Env):
             print(yaw, pitch, roll)
             print('REWARD')
             print(reward)
-
         return reward
 
     # get the current angle of every joint and return them as numpy array
