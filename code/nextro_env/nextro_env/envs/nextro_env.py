@@ -17,6 +17,7 @@ from gym.utils import seeding
 from .settings import load_settings, get_default_settings, save_default_settings
 import os
 import shutil
+from math import isnan
 
 # the urdf location has to be absolute path
 NEXTRO_LOC = __file__.replace('envs/nextro_env.py', 'assets/urdf/nextro.urdf')
@@ -259,6 +260,11 @@ class NextroEnv(gym.Env):
     def _preproc_action(self, action):
         # clipping to make sure we don't set the motors to weird angles
         action = np.clip(action, a_min=-1.4, a_max=1.4)
+        for idx, x in enumerate(action):
+            if isnan(x):
+                action[idx] = 0.0
+                self.done = True
+                print("NaN encountered!")
         pid_action = 0
 
         # by default motors are not mirrored so negative angle on one side
@@ -343,6 +349,9 @@ class NextroEnv(gym.Env):
                             )
 
         objectives = [forward_reward, energy_reward, drift_reward, shake_reward]
+        for o in objectives:
+            if isnan(o):
+                raise Exception("NaN supplied from simulation!")
         weighted_objectives = [o*w for o,w in zip(objectives, self._objective_weights)]
         reward = sum(weighted_objectives)
 
@@ -362,6 +371,10 @@ class NextroEnv(gym.Env):
         _, _, _, a, b, c, d = self.robot.robot_body.get_pose()
         body_angles = p.getEulerFromQuaternion((a, b, c, d))
         joint_angles, joint_velocities, _ = self.robot.get_motor_all()
+
+        for i in range(len(joint_angles)):
+            if isnan(joint_angles[i]) or isnan(joint_velocities[i]):
+                raise Exception("NaN arrived from observations")
 
         #the fixed [0,0,0,0] will later be used as control bits
         self.new_observation = np.concatenate((joint_angles,

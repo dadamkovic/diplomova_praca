@@ -51,11 +51,11 @@ SENZOR_OUTPUT_SIZE = (NUM_JOINTS*2 + 3 + CONTROL_SIZE)
 #################################################################
 
 # default maximal length in seconds of a single episode
-DEFAULT_MAX_TIME = 20
+DEFAULT_MAX_TIME = 15
 # if default_max_time and default_min_time are different, the time that episode
 # will run for gets chosen as random number in the interval, this in theory
 # should prevent agent from taking too long to start moving
-DEFAULT_MIN_TIME = 20
+DEFAULT_MIN_TIME = 8
 # defines the FPS that the simulation will run at
 FRAMES_PER_SECOND = 30
 # number of prevous observations supplied on the input
@@ -63,12 +63,12 @@ PREV_OBS_ON_INPUT = 5
 # if PIDs are to be used thsi determins [kp, ki, kd] parameters
 PID_PARAMS = [0.1, 0, 0.003]
 # multiple of the dist eward
-FORWARD_WEIGHT = 1
+FORWARD_WEIGHT = 5
 ENERGY_WEIGHT = 0.005
-DRIFT_WEIGHT = 0
-SHAKE_WEIGHT = 0
-POS_GAIN_START = 0.1
-POS_GAIN_FINAL = 0.2
+DRIFT_WEIGHT = 1
+SHAKE_WEIGHT = 1
+POS_GAIN_START = 0.06
+POS_GAIN_FINAL = 0.08
 
 
 
