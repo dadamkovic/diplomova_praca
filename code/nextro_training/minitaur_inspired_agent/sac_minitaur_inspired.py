@@ -18,9 +18,9 @@ def sac_minitaur_inspired(
         discount_factor=0.98,
         last_frame=2e6,
         # Adam optimizer settings
-        lr_q=5e-5,
+        lr_q=3e-4,
         lr_v=5e-5,
-        lr_pi=5e-5,
+        lr_pi=3e-4,
         # Training settings
         minibatch_size=100,
         update_frequency=2,
@@ -30,7 +30,7 @@ def sac_minitaur_inspired(
         replay_buffer_size=1e6,
         # Exploration settings
         temperature_initial=0.5,
-        lr_temperature=5e-6,
+        lr_temperature=3e-4,
         entropy_target_scaling=1.,
         # Model construction
         q1_model_constructor=fc_q,
