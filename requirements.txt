@@ -1,5 +1,5 @@
 pre-commit
-all
+autonomous-learning-library
 gym
 git
 gitpython
