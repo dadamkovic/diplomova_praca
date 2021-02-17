@@ -176,8 +176,8 @@ class NextroEnv(gym.Env):
 
         self._objective_weights = [self.settings['FORWARD_WEIGHT'],
                                    self.settings['ENERGY_WEIGHT'],
-                                   self.settings['SHAKE_WEIGHT'],
-                                   self.settings['DRIFT_WEIGHT']
+                                   self.settings['DRIFT_WEIGHT'],
+                                   self.settings['SHAKE_WEIGHT']
                                    ]
 
     # called first regardes of render mode, should not have to be called again
@@ -332,7 +332,8 @@ class NextroEnv(gym.Env):
 
         # original position might not have been exactly [0,0] so adjust
         # current coordinates
-        forward_reward = x - self._prev_position[0]
+        #minus in the forward reward is because its easier than turning the robot 180
+        forward_reward = -(x - self._prev_position[0])
         drift_reward = -abs(y - self._prev_position[1])
 
         self._prev_position = [x, y]

@@ -63,10 +63,10 @@ PREV_OBS_ON_INPUT = 5
 # if PIDs are to be used thsi determins [kp, ki, kd] parameters
 PID_PARAMS = [0.1, 0, 0.003]
 # multiple of the dist eward
-FORWARD_WEIGHT = 5
-ENERGY_WEIGHT = 0.005
-DRIFT_WEIGHT = 1
-SHAKE_WEIGHT = 1
+FORWARD_WEIGHT = 500
+ENERGY_WEIGHT = 0.5
+DRIFT_WEIGHT = 100
+SHAKE_WEIGHT = 100
 POS_GAIN_START = 0.06
 POS_GAIN_FINAL = 0.08
 
@@ -108,7 +108,6 @@ def get_default_settings(manual_modify=False):
     set_dict['POS_GAIN_FINAL'] = POS_GAIN_FINAL
     set_dict['POS_GAIN_START'] = POS_GAIN_START
     set_dict['COLLISION'] = True
-    set_dict['PUNISH_Y'] = False
     if manual_modify:
         set_dict = manually_mod_settings(set_dict)
 
@@ -160,16 +159,12 @@ class FunctionItemMod(FunctionItem):
 
     def action(self):
         self.return_value = self.function(*self.args, **self.kwargs)
-        self.text = self.base_text + f"<{self.return_value}>"
-
-class SubmenuItemMod(SubmenuItem):
-    def __init__(self, text, submenu, menu=None, should_exit=False):
-        super(SubmenuItemMod, self).__init__(text=text, submenu=submenu, menu=menu, should_exit=should_exit)
-        self.base_text = text
-
-    def clean_up(self):
-        super().clean_up()
-        self.text = (self.base_text + '<') + ('True>' if self.get_return()==0 else 'False>')
+        if self.return_value.startswith(('T','t')):
+            self.text = self.base_text + "<True>"
+        elif self.return_value.startswith(('T','t')):
+            self.text = self.base_text + "<False>"
+        else:
+            self.text = self.base_text + f"<{self.return_value}>"
 
 #using a simple menu load parameters from the user
 #TODO: look for a way to implement simple explanations of what the parameters do
@@ -183,7 +178,7 @@ def manually_mod_settings(set_dict):
         def prompt_func(text, set_key):
             value = input(text)
             if set_key in ['PID_ENABLED','COLLISION']:
-                set_dict[set_key] = True if value.startswith(('t','T')) else False
+                set_dict[set_key] = True if value.startswith(('T','t')) else False
             elif set_key == 'PID_PARAMS':
                 set_dict[set_key] = [float(x) for x in value.replace(' ',',').split(',')]
             elif isInt(float(value)):
@@ -193,10 +188,8 @@ def manually_mod_settings(set_dict):
             return value
 
         if key in ['PID_ENABLED','COLLISION']:
-            tmp = SelectionMenu(['True','False'])
-            desc = f"{key}[{val}]"
-            menu_items.append(SubmenuItemMod(desc, tmp, menu))
-        elif key == 'PID_PARAMS':
+            prompt = f"{key}[{val}](F/T) : "
+        if key == 'PID_PARAMS':
             prompt = "PID <P I D>: "
             menu_items.append(FunctionItemMod(desc, prompt_func, [prompt, key]))
         else:
