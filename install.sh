@@ -15,16 +15,19 @@ fi
 
 sudo pip -r requirements.txt
 pip3 install -e ./code/nextro_env/nextro_env
-echo "\n"
 echo "------------------------"
-echo "Restart the computer now to complete the installation of lambda stack? (yes/no): "
-
-$user_inp = ""
-while [$user_inp != "yes" || $user_inp != "no"]; do
-	read -p  "Restart the computer now to complete the installation of lambda stack? (yes/no): " user_inp
-done
-
-if [$user_inp == "yes"]
+echo "Install complete!"
+if [ "$user_inp" = "yes" ]
 then
-	sudo reboot
+	read -p "Restart the computer now to complete the installation of lambda stack? (yes/no): " user_inp
+
+	while [[ "$user_inp" != "yes" && "$user_inp" != "no" ]]
+	do
+		read -p  "Restart the computer now to complete the installation of lambda stack? (yes/no): " user_inp
+	done
+
+	if [ "$user_inp" = "yes" ]
+	then
+		sudo reboot
+	fi
 fi
