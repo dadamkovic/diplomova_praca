@@ -81,5 +81,9 @@ def resolve_arguments(parser):
 
     parser.add_argument("--logging", default=False, required=False, action='store_true',
                         help="Set flag to enable advanced logging into the running terminal.")
+
+    parser.add_argument("-rew_params", nargs=4, required=False, help="List of "+\
+                        "rewards in the form <FORWARD, ENERGY, DRIFT, SHAKE>")
+
     args = parser.parse_args()
     return args

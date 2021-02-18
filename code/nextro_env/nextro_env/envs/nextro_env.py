@@ -173,12 +173,17 @@ class NextroEnv(gym.Env):
         self.pid_regs = []
         self.steps_taken = 0
         self.logging = kwargs['c_args'].logging
-
-        self._objective_weights = [self.settings['FORWARD_WEIGHT'],
-                                   self.settings['ENERGY_WEIGHT'],
-                                   self.settings['DRIFT_WEIGHT'],
-                                   self.settings['SHAKE_WEIGHT']
-                                   ]
+        if kwargs['c_args'].rew_params is None:
+            self._objective_weights = [self.settings['FORWARD_WEIGHT'],
+                                       self.settings['ENERGY_WEIGHT'],
+                                       self.settings['DRIFT_WEIGHT'],
+                                       self.settings['SHAKE_WEIGHT']
+                                       ]
+        else:
+            try:
+                self._objective_weights = [float(x) for x in kwargs['c_args'].rew_params]
+            except ValueError:
+                raise Exception("Could not convert reward weights into floats")
 
     # called first regardes of render mode, should not have to be called again
     # if the mode is not 'human'
