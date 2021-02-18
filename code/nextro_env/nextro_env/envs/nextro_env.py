@@ -170,6 +170,9 @@ class NextroEnv(gym.Env):
         prev_obs = self.settings['PREV_OBS_ON_INPUT']
         self.obs_buffer = deque(np.zeros(obs_size) for _ in range(prev_obs))
 
+        self._death_wall_pos = 2
+        self._death_wall_speed = 0.008
+
         self.pid_regs = []
         self.steps_taken = 0
         self.logging = kwargs['c_args'].logging
@@ -323,6 +326,8 @@ class NextroEnv(gym.Env):
         x, y, z, a, b, c, d = self.robot.robot_body.get_pose()
         yaw, pitch, roll = p.getEulerFromQuaternion((a, b, c, d))
 
+        self._death_wall_pos -= self._death_wall_speed
+
         # if the robot turns over end episode and give bad reward
         if abs(yaw) > (np.pi/2):
             self.done = True
@@ -330,10 +335,11 @@ class NextroEnv(gym.Env):
             self._time_elapsed = 0
             return -50
         # end episode if enough time has elapsed
-        if self._time_elapsed >= self._episode_length:
+        if self._time_elapsed >= self._episode_length or (self._death_wall_pos <= x):
             self.done = True
             self._init = False
             self._time_elapsed = 0
+            self._death_wall_pos = 2
 
         # original position might not have been exactly [0,0] so adjust
         # current coordinates
@@ -374,7 +380,7 @@ class NextroEnv(gym.Env):
     def _get_state(self):
         if not self._init:
             raise Exception('Initialize the environment first')
-        _, _, _, a, b, c, d = self.robot.robot_body.get_pose()
+        x, y, z, a, b, c, d = self.robot.robot_body.get_pose()
         body_angles = p.getEulerFromQuaternion((a, b, c, d))
         joint_angles, joint_velocities, _ = self.robot.get_motor_all()
 
@@ -382,11 +388,12 @@ class NextroEnv(gym.Env):
             if isnan(joint_angles[i]) or isnan(joint_velocities[i]):
                 raise Exception("NaN arrived from observations")
 
+        robot_death_diff = np.clip(self._death_wall_pos - x , -1, 3)
         #the fixed [0,0,0,0] will later be used as control bits
         self.new_observation = np.concatenate((joint_angles,
                                                joint_velocities,
                                                body_angles,
-                                               [1,0,0,0]))
+                                               [robot_death_diff,0,0,0]))
         unrolled_buffer = np.ndarray.flatten(np.array(self.obs_buffer))
 
         return np.concatenate((self.new_observation, unrolled_buffer))
