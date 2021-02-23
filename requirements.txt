@@ -1,6 +1,6 @@
+wheel
 pre-commit
 autonomous-learning-library
 gym
-git
 gitpython
 console-menu

@@ -12,9 +12,9 @@ then
 	sudo dpkg -i ${LAMBDA_REPO} && rm -f ${LAMBDA_REPO} && \
 	sudo apt-get update && sudo apt-get install -y lambda-stack-cuda
 fi
-
-sudo pip -r requirements.txt
-pip3 install -e ./code/nextro_env/nextro_env
+pip3 install wheel
+pip3 install -r requirements.txt
+pip3 install -e ./code/nextro_env
 echo "------------------------"
 echo "Install complete!"
 if [ "$user_inp" = "yes" ]
