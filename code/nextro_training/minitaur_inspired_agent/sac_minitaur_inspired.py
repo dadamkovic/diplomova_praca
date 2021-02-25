@@ -105,7 +105,7 @@ def sac_minitaur_inspired(
         )
 
         policy_model = policy_model_constructor(env).to(device)
-        policy_optimizer = Adam(policy_model.parameters(), lr=lr_pi)
+        policy_optimizer = Adam(filter(lambda p: p.requires_grad, policy_model.parameters()), lr=lr_pi)
         policy = SoftDeterministicPolicyCtrlRep(
             policy_model,
             policy_optimizer,
