@@ -185,6 +185,10 @@ class NextroEnv(gym.Env):
         else:
             try:
                 self._objective_weights = [float(x) for x in kwargs['c_args'].rew_params]
+                self.settings['FORWARD_WEIGHT'] = kwargs['c_args'].rew_params[0]
+                self.settings['ENERGY_WEIGHT'] = kwargs['c_args'].rew_params[1]
+                self.settings['DRIFT_WEIGHT'] = kwargs['c_args'].rew_params[2]
+                self.settings['SHAKE_WEIGHT'] = kwargs['c_args'].rew_params[3]
             except ValueError:
                 raise Exception("Could not convert reward weights into floats")
 

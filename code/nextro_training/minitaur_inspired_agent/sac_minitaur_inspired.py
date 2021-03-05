@@ -1,7 +1,7 @@
 from torch.optim import Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR
 #from all.agents import SAC
-from all.approximation import QContinuous, PolyakTarget, VNetwork
+from all.approximation import QContinuous, PolyakTarget, VNetwork, FixedTarget
 from all.bodies import TimeFeature
 from all.logging import DummyWriter
 #from all.policies.soft_deterministic import SoftDeterministicPolicy
@@ -23,7 +23,7 @@ def sac_minitaur_inspired(
         lr_pi=5e-4,
         # Training settings
         minibatch_size=100,
-        update_frequency=10000,
+        update_frequency=1,
         polyak_rate=0.005,
         # Replay Buffer settings
         replay_start_size=5000,
@@ -73,6 +73,7 @@ def sac_minitaur_inspired(
                 q_1_optimizer,
                 final_anneal_step
             ),
+            target=FixedTarget(1000),
             writer=writer,
             name='q_1'
         )
@@ -86,6 +87,7 @@ def sac_minitaur_inspired(
                 q_2_optimizer,
                 final_anneal_step
             ),
+            target=FixedTarget(1000),
             writer=writer,
             name='q_2'
         )
