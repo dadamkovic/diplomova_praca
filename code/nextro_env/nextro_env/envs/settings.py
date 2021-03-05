@@ -51,11 +51,11 @@ SENZOR_OUTPUT_SIZE = (NUM_JOINTS*2 + 3 + CONTROL_SIZE)
 #################################################################
 
 # default maximal length in seconds of a single episode
-DEFAULT_MAX_TIME = 15
-# if default_max_time and default_min_time are different, the time that episode
+DEFAULT_MAX_TIME = 180
+# if default_max_time and default_min_time are different, the time that episo
 # will run for gets chosen as random number in the interval, this in theory
 # should prevent agent from taking too long to start moving
-DEFAULT_MIN_TIME = 8
+DEFAULT_MIN_TIME = 180
 # defines the FPS that the simulation will run at
 FRAMES_PER_SECOND = 30
 # number of prevous observations supplied on the input

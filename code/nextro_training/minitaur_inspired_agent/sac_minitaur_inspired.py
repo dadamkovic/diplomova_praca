@@ -23,7 +23,7 @@ def sac_minitaur_inspired(
         lr_pi=5e-4,
         # Training settings
         minibatch_size=100,
-        update_frequency=2,
+        update_frequency=10000,
         polyak_rate=0.005,
         # Replay Buffer settings
         replay_start_size=5000,
