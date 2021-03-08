@@ -397,7 +397,7 @@ class NextroEnv(gym.Env):
         self.new_observation = np.concatenate((joint_angles,
                                                joint_velocities,
                                                body_angles,
-                                               [robot_death_diff,0,0,0]))
+                                               [1,0,0,0]))
         unrolled_buffer = np.ndarray.flatten(np.array(self.obs_buffer))
 
         return np.concatenate((self.new_observation, unrolled_buffer))

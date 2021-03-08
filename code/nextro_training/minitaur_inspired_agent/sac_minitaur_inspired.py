@@ -18,16 +18,16 @@ def sac_minitaur_inspired(
         discount_factor=0.98,
         last_frame=2e6,
         # Adam optimizer settings
-        lr_q=5e-5,
+        lr_q=5e-6,
         lr_v=5e-5,
         lr_pi=5e-4,
         # Training settings
         minibatch_size=100,
-        update_frequency=1,
+        update_frequency=2,
         polyak_rate=0.005,
         # Replay Buffer settings
         replay_start_size=5000,
-        replay_buffer_size=1e6,
+        replay_buffer_size=2e5,
         # Exploration settings
         temperature_initial=1,
         lr_temperature=5e-5,
