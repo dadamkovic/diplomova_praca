@@ -173,6 +173,9 @@ class NextroEnv(gym.Env):
         self._death_wall_pos = 2
         self._death_wall_speed = 0.008
 
+        #options 'F'(orward), 'B'(ack), 'L'(eft), 'R'(ight)
+        self._direction = 'F'
+
         self.pid_regs = []
         self.steps_taken = 0
         self.logging = kwargs['c_args'].logging
@@ -324,6 +327,40 @@ class NextroEnv(gym.Env):
         self.obs_buffer.pop()
         self.obs_buffer.appendleft(obs_2_store)
 
+    def _test_deathwall(self, x, y):
+        if self._direction == 'F':
+            if self._death_wall_pos <= x:
+                return True
+        elif self._direction == 'B':
+            if self._death_wall_pos <= -x:
+                return True
+        elif self._direction == 'L':
+            if self._death_wall_pos <= y:
+                return True
+        else:
+            if self._death_wall_pos <= -y:
+                return True
+        return False
+
+    # original position might not have been exactly [0,0] so adjust
+    # current coordinates
+    #minus in the forward reward is because its easier than turning the robot 180
+    def _get_sub_rewards(self, x, y):
+        if self._direction == 'F':
+            forward_reward = -(x - self._prev_position[0])
+            drift_reward = -abs(y - self._prev_position[1])
+        elif self._direction == 'B':
+            forward_reward = (x - self._prev_position[0])
+            drift_reward = -abs(y - self._prev_position[1])
+        elif self._direction == 'L':
+            forward_reward = -(y - self._prev_position[1])
+            drift_reward = -abs(x - self._prev_position[0])
+        else:
+            forward_reward = (y - self._prev_position[1])
+            drift_reward = -abs(x - self._prev_position[0])
+
+        return forward_reward, drift_reward
+
     # the reward is calculated as postion change in 2D space (x, y axis)
     # plus the discounted total distance from starting position
     def _get_reward_update_done(self):
@@ -338,18 +375,14 @@ class NextroEnv(gym.Env):
             self._init = False
             self._time_elapsed = 0
             return -50
-        # end episode if enough time has elapsed
-        if self._time_elapsed >= self._episode_length or (self._death_wall_pos <= x):
+        # end episode if enough time has elapsed or death wall has caught up
+        if (self._time_elapsed >= self._episode_length) or self._test_deathwall(x, y):
             self.done = True
             self._init = False
             self._time_elapsed = 0
             self._death_wall_pos = 2
 
-        # original position might not have been exactly [0,0] so adjust
-        # current coordinates
-        #minus in the forward reward is because its easier than turning the robot 180
-        forward_reward = -(x - self._prev_position[0])
-        drift_reward = -abs(y - self._prev_position[1])
+        forward_reward, drift_reward = self._get_sub_rewards(x, y)
 
         self._prev_position = [x, y]
         num_joints = self.settings['NUM_JOINTS']
@@ -392,12 +425,24 @@ class NextroEnv(gym.Env):
             if isnan(joint_angles[i]) or isnan(joint_velocities[i]):
                 raise Exception("NaN arrived from observations")
 
-        robot_death_diff = np.clip(self._death_wall_pos - x , -1, 3)
-        #the fixed [0,0,0,0] will later be used as control bits
+        #ranodmly switch the direction
+        if np.random.rand() > 0.99:
+            self._direction = np.random.choice(['F','B','L','R'])
+            self._death_wall_pos = 2
+
+        if self._direction == 'F':
+            control_bits = [1,0,0,0]
+        elif self._direction == 'B':
+            control_bits = [0,1,0,0]
+        elif self._direction == 'L':
+            control_bits = [0,0,1,0]
+        else:
+            control_bits = [0,0,0,1]
+
         self.new_observation = np.concatenate((joint_angles,
                                                joint_velocities,
                                                body_angles,
-                                               [1,0,0,0]))
+                                               control_bits))
         unrolled_buffer = np.ndarray.flatten(np.array(self.obs_buffer))
 
         return np.concatenate((self.new_observation, unrolled_buffer))
