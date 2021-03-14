@@ -18,7 +18,7 @@ def sac_minitaur_inspired(
         discount_factor=0.98,
         last_frame=2e6,
         # Adam optimizer settings
-        lr_q=5e-6,
+        lr_q=5e-5,
         lr_v=5e-5,
         lr_pi=5e-4,
         # Training settings
