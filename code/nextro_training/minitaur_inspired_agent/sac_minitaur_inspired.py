@@ -27,7 +27,7 @@ def sac_minitaur_inspired(
         polyak_rate=0.005,
         # Replay Buffer settings
         replay_start_size=5000,
-        replay_buffer_size=2e5,
+        replay_buffer_size=5e5,
         # Exploration settings
         temperature_initial=1,
         lr_temperature=5e-5,
