@@ -8,6 +8,7 @@ Created on Tue Feb  2 13:21:34 2021
 
 import os
 from torch import load as t_load
+from collections import namedtuple
 
 #wirghts of the networks will be saved in files named like this
 NET_FILES = ['policy.pt', 'q_1.pt', 'q_2.pt','v.pt']
@@ -18,7 +19,7 @@ def get_existing_runs():
 
 #loads the pretrained weights into the model
 #TODO: find why the loaded weights cannot be trained further only observed
-def load_weights(location, exp):
+def load_weights(location):
     try:
         filenames = os.listdir(location)
     except FileNotFoundError():
@@ -33,15 +34,17 @@ def load_weights(location, exp):
     for weight_file in NET_FILES:
         nn_paths.append(os.path.join(location, weight_file))
 
+    pretrained_models = namedtuple("models", "q_1 q_2 v policy")
+
     #TODO: figure out how this plays with the CUDA settings, until then hope it works
-    exp._agent.agent.policy.model = t_load(nn_paths[0])
-    exp._agent.agent.q_1.model = t_load(nn_paths[1])
-    exp._agent.agent.q_2.model = t_load(nn_paths[2])
-    exp._agent.agent.v.model = t_load(nn_paths[3])
+    pretrained_models.policy = t_load(nn_paths[0])
+    pretrained_models.q_1 = t_load(nn_paths[1])
+    pretrained_models.q_2 = t_load(nn_paths[2])
+    pretrained_models.v = t_load(nn_paths[3])
     print('----------------------------')
     print("WEIGHTS LOADED!")
     print('----------------------------')
-    return exp
+    return pretrained_models
 
 
 def resolve_arguments(parser):
