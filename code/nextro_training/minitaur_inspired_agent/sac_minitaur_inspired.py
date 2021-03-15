@@ -36,7 +36,8 @@ def sac_minitaur_inspired(
         q1_model_constructor=fc_q,
         q2_model_constructor=fc_q,
         v_model_constructor=fc_v,
-        policy_model_constructor=fc_soft_policy
+        policy_model_constructor=fc_soft_policy,
+        pretrained_models=None,
 ):
     """
     SAC continuous control preset.
@@ -64,7 +65,17 @@ def sac_minitaur_inspired(
     def _sac(env, writer=DummyWriter()):
         final_anneal_step = (last_frame - replay_start_size) // update_frequency
 
+        v_model = v_model_constructor(env).to(device)
         q_1_model = q1_model_constructor(env).to(device)
+        q_2_model = q2_model_constructor(env).to(device)
+        policy_model = policy_model_constructor(env).to(device)
+
+        if pretrained_models is not None:
+            q_1_model = pretrained_models.q_1.model.to(device)
+            q_2_model = pretrained_models.q_2.model.to(device)
+            v_model = pretrained_models.v.model.to(device)
+            policy_model = pretrained_models.policy.model.to(device)
+
         q_1_optimizer = Adam(q_1_model.parameters(), lr=lr_q)
         q_1 = QContinuousCtrlRep(
             q_1_model,
@@ -78,7 +89,7 @@ def sac_minitaur_inspired(
             name='q_1'
         )
 
-        q_2_model = q2_model_constructor(env).to(device)
+
         q_2_optimizer = Adam(q_2_model.parameters(), lr=lr_q)
         q_2 = QContinuousCtrlRep(
             q_2_model,
@@ -92,7 +103,7 @@ def sac_minitaur_inspired(
             name='q_2'
         )
 
-        v_model = v_model_constructor(env).to(device)
+
         v_optimizer = Adam(v_model.parameters(), lr=lr_v)
         v = VNetworkCtrlRep(
             v_model,
@@ -106,7 +117,7 @@ def sac_minitaur_inspired(
             name='v',
         )
 
-        policy_model = policy_model_constructor(env).to(device)
+
         policy_optimizer = Adam(filter(lambda p: p.requires_grad, policy_model.parameters()), lr=lr_pi)
         policy = SoftDeterministicPolicyCtrlRep(
             policy_model,

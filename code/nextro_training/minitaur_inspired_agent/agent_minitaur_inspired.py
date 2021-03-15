@@ -34,8 +34,14 @@ if __name__ == '__main__':
 
     env = GymEnvironment(env,
                          args.device)
+
+    pretrained_models = None
+    if args.loc != '':
+        pretrained_models = load_weights(args.loc)
+
     agent = sac_minitaur_inspired(device=args.device,
-                                  last_frame=args.frames)
+                                  last_frame=args.frames,
+                                  pretrained_models=pretrained_models)
     exp = SingleEnvExperiment(agent,
                               env,
                               render=args.render)
@@ -43,9 +49,7 @@ if __name__ == '__main__':
     all_runs = set(get_existing_runs())
     current_run_name = list(all_runs - previous_runs)[0]
 
-    if args.loc != '':
-        exp = load_weights(args.loc,
-                            exp)
+
 
     if args.mode == 'train':
         if args.episodes != 0:
