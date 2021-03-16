@@ -431,7 +431,7 @@ class NextroEnv(gym.Env):
                 raise Exception("NaN arrived from observations")
 
         #ranodmly switch the direction
-        if np.random.rand() > 0.99:
+        if np.random.rand() > 0.999:
             self._direction = np.random.choice(['F','B','L','R'])
             print(self._direction)
             if self._direction == 'F':
