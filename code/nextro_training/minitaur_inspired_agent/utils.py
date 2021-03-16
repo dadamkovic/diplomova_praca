@@ -88,5 +88,9 @@ def resolve_arguments(parser):
     parser.add_argument("-rew_params", nargs=4, required=False, help="List of "+\
                         "rewards in the form <FORWARD, ENERGY, DRIFT, SHAKE>")
 
+    parser.add_argument("--death_wall", default=True, required=False,
+                        action='store_false',
+                        help="If set death wall will be disabled.")
+
     args = parser.parse_args()
     return args

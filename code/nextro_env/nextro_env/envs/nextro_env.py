@@ -172,6 +172,8 @@ class NextroEnv(gym.Env):
 
         self._death_wall_pos = 2
         self._death_wall_speed = 0.008
+        #true by default
+        self._death_wall_active = kwargs['c_args'].death_wall
 
         self.pid_regs = []
         self.steps_taken = 0
@@ -231,6 +233,8 @@ class NextroEnv(gym.Env):
             # frames should be used when these default times differ
             self._episode_length = np.random.uniform(self.settings['DEFAULT_MIN_TIME'],
                                                      self.settings['DEFAULT_MAX_TIME'])
+        else:
+            self._episode_length = np.inf
 
         # render doesn't have to be called in direct mode by user but it should
         # still run at least once
@@ -338,8 +342,11 @@ class NextroEnv(gym.Env):
             self._init = False
             self._time_elapsed = 0
             return -50
-        # end episode if enough time has elapsed
-        if self._time_elapsed >= self._episode_length or (self._death_wall_pos <= x):
+
+        death_wall = (self._death_wall_pos <= x) and (self._death_wall_active)
+
+        # end episode if enough time has elapsed or death wall met
+        if self._time_elapsed >= self._episode_length or death_wall:
             self.done = True
             self._init = False
             self._time_elapsed = 0
@@ -394,6 +401,7 @@ class NextroEnv(gym.Env):
 
         robot_death_diff = np.clip(self._death_wall_pos - x , -1, 3)
         #the fixed [0,0,0,0] will later be used as control bits
+
         self.new_observation = np.concatenate((joint_angles,
                                                joint_velocities,
                                                body_angles,
