@@ -433,7 +433,7 @@ class NextroEnv(gym.Env):
         #ranodmly switch the direction
         if np.random.rand() > 0.99:
             self._direction = np.random.choice(['F','B','L','R'])
-            print(self._direction)
+            #print(self._direction)
             if self._direction == 'F':
                 self._death_wall_pos = self._prev_position[0] + 2
             elif self._direction == 'B':
