@@ -244,6 +244,7 @@ class NextroEnv(gym.Env):
         # if the robot is loaded we only need to move it not add it again
         if self.robot.robot_body is not None:
             self.robot.robot_body.reset_position(self._original_position)
+            self._original_orientation[2] = np.random.uniform(-3,3)
             self.robot.robot_body.reset_orientation(self._original_orientation)
             self._prev_position = self._original_position
             self._reset_joints()
@@ -255,7 +256,7 @@ class NextroEnv(gym.Env):
             # see above how these are used
             self._original_position = self.robot.robot_body.get_position()
             self._prev_position = self._original_position
-            self._original_orientation = self.robot.robot_body.get_orientation()
+            self._original_orientation = list(self.robot.robot_body.get_orientation())
             # move camera closer to robot
             p.resetDebugVisualizerCamera(1.2, -145, -38, [0, 0, 0])
             p.setTimeStep(self._time_step, self.client)
