@@ -18,6 +18,7 @@ from .settings import load_settings, get_default_settings, save_default_settings
 import os
 import shutil
 from math import isnan
+import git
 
 # the urdf location has to be absolute path
 NEXTRO_LOC = __file__.replace('envs/nextro_env.py', 'assets/urdf/nextro.urdf')
@@ -194,6 +195,14 @@ class NextroEnv(gym.Env):
                 self.settings['SHAKE_WEIGHT'] = float(kwargs['c_args'].rew_params[3])
             except ValueError:
                 raise Exception("Could not convert reward weights into floats")
+
+        try:
+            repo = git.Repo(search_parent_directories=True)
+            self._sha = repo.head.object.hexsha
+        except Exception:
+            print("Falied to fetch git info, running without!")
+            self._sha = None
+
 
     # called first regardes of render mode, should not have to be called again
     # if the mode is not 'human'
@@ -405,10 +414,6 @@ class NextroEnv(gym.Env):
         reward = sum(weighted_objectives)
 
         if self.steps_taken % 150 == 0 and self.logging:
-            print("CURR VELO:")
-            print(curr_velocities)
-            print("YAW, PITCH, ROLL")
-            print(yaw, pitch, roll)
             print('REWARD')
             print(reward)
         return reward
@@ -428,7 +433,15 @@ class NextroEnv(gym.Env):
         #ranodmly switch the direction
         if np.random.rand() > 0.99:
             self._direction = np.random.choice(['F','B','L','R'])
-            self._death_wall_pos = 2
+            print(self._direction)
+            if self._direction == 'F':
+                self._death_wall_pos = self._prev_position[0] + 2
+            elif self._direction == 'B':
+                self._death_wall_pos = self._prev_position[0] - 2
+            elif self._direction == 'L':
+                self._death_wall_pos = self._prev_position[1] + 2
+            else:
+                self._death_wall_pos = self._prev_position[1] - 2
 
         if self._direction == 'F':
             control_bits = [1,0,0,0]
@@ -468,7 +481,7 @@ class NextroEnv(gym.Env):
             i += 1
         new_name = os.path.join('runs', new_name)
         shutil.move(old_name, new_name)
-        save_default_settings(self.settings, new_name)
+        save_default_settings(self.settings, new_name, self._sha)
         print('-------------------')
         print(f'Settings saved tp {new_name}')
         print('-------------------')

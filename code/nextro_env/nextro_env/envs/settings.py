@@ -7,9 +7,8 @@ Created on Mon Dec  7 15:10:25 2020
 """
 import pickle
 import os
-import git
-from consolemenu import ConsoleMenu, SelectionMenu
-from consolemenu.items import SubmenuItem, FunctionItem
+from consolemenu import ConsoleMenu
+from consolemenu.items import FunctionItem
 
 
 
@@ -63,10 +62,10 @@ PREV_OBS_ON_INPUT = 5
 # if PIDs are to be used thsi determins [kp, ki, kd] parameters
 PID_PARAMS = [0.1, 0, 0.003]
 # multiple of the dist eward
-FORWARD_WEIGHT = 500
-ENERGY_WEIGHT = 0.5
-DRIFT_WEIGHT = 100
-SHAKE_WEIGHT = 100
+FORWARD_WEIGHT = 10000
+ENERGY_WEIGHT = 0.8
+DRIFT_WEIGHT = 65
+SHAKE_WEIGHT = 18
 POS_GAIN_START = 0.06
 POS_GAIN_FINAL = 0.08
 
@@ -114,7 +113,7 @@ def get_default_settings(manual_modify=False):
     set_dict = add_non_user_settings(set_dict)
     return set_dict
 
-def save_default_settings(settings, loc):
+def save_default_settings(settings, loc,sha):
     file_name_pic = os.path.join(loc, 'settings.p')
     file_name_txt = os.path.join(loc, 'settings.txt')
 
@@ -124,12 +123,10 @@ def save_default_settings(settings, loc):
     with open(file_name_txt,'w') as fh:
         for key, item in settings.items():
             fh.write('{} \t {} \n'.format(str(key), str(item)))
-        try:
-            repo = git.Repo(search_parent_directories=True)
-            sha = repo.head.object.hexsha
+        if sha is not None:
             fh.write('CURRENT GIT HASH: {}'.format(sha))
-        except Exception:
-            print('Failed to fetch GIT INFO!')
+        else:
+            print('No git info supplied, ommiting')
 
 def isInt(number):
     tempN = int(number)
