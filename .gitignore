@@ -4,3 +4,4 @@ resources/books
 code/test_playground
 trained_nets
 *.pyc
+*events.out.tfevents*
