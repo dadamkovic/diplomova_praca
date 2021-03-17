@@ -251,7 +251,8 @@ class NextroEnv(gym.Env):
         else:
             p.resetSimulation(self.client)
             p.setGravity(0, 0, -10)
-            p.loadURDF("plane.urdf")
+            plane_id = p.loadURDF("plane.urdf")
+            p.changeDynamics(plane_id, -1, lateralFriction=10, spinningFriction=10)
             self.robot.reset(p)
             # see above how these are used
             self._original_position = self.robot.robot_body.get_position()
