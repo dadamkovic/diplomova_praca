@@ -244,7 +244,7 @@ class NextroEnv(gym.Env):
         # if the robot is loaded we only need to move it not add it again
         if self.robot.robot_body is not None:
             self.robot.robot_body.reset_position(self._original_position)
-            #self._original_orientation[2] = np.random.uniform(-3,3)
+            self._original_orientation[2] = np.random.uniform(-0.5,0.5)
             self.robot.robot_body.reset_orientation(self._original_orientation)
             self._prev_position = self._original_position
             self._reset_joints()
@@ -252,7 +252,7 @@ class NextroEnv(gym.Env):
             p.resetSimulation(self.client)
             p.setGravity(0, 0, -10)
             plane_id = p.loadURDF("plane.urdf")
-            p.changeDynamics(plane_id, -1, lateralFriction=5, spinningFriction=5)
+            p.changeDynamics(plane_id, -1, lateralFriction=3)
             self.robot.reset(p)
             # see above how these are used
             self._original_position = self.robot.robot_body.get_position()
