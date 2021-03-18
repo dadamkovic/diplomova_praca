@@ -244,7 +244,7 @@ class NextroEnv(gym.Env):
         # if the robot is loaded we only need to move it not add it again
         if self.robot.robot_body is not None:
             self.robot.robot_body.reset_position(self._original_position)
-            self._original_orientation[2] = np.random.uniform(-3,3)
+            #self._original_orientation[2] = np.random.uniform(-3,3)
             self.robot.robot_body.reset_orientation(self._original_orientation)
             self._prev_position = self._original_position
             self._reset_joints()
@@ -283,6 +283,8 @@ class NextroEnv(gym.Env):
                 action[idx] = 0.0
                 self.done = True
                 print("NaN encountered!")
+                import sys
+                sys.exit()
         pid_action = 0
 
         # by default motors are not mirrored so negative angle on one side
