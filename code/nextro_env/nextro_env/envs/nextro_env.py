@@ -226,6 +226,7 @@ class NextroEnv(gym.Env):
         self.steps_taken = 0
         self._time_elapsed = 0
         self._old_dist_travelled = 0
+        self._death_wall_pos = 2
 
         # during testing there is no point in making the episodes last different
         # times
@@ -344,17 +345,16 @@ class NextroEnv(gym.Env):
         if abs(yaw) > (np.pi/2):
             self.done = True
             self._init = False
-            self._time_elapsed = 0
+            print("Terminated by excessive tilt!")
             return -50
 
         death_wall = (self._death_wall_pos <= x) and (self._death_wall_active)
-
+        timer_reached = self._time_elapsed >= self._episode_length
         # end episode if enough time has elapsed or death wall met
-        if self._time_elapsed >= self._episode_length or death_wall:
+        if timer_reached or death_wall:
             self.done = True
             self._init = False
-            self._time_elapsed = 0
-            self._death_wall_pos = 2
+            print(f"Terminated by DW {death_wall}; TIME : {timer_reached}!")
 
         # original position might not have been exactly [0,0] so adjust
         # current coordinates
@@ -363,7 +363,6 @@ class NextroEnv(gym.Env):
         drift_reward = -abs(y - self._prev_position[1])
 
         self._prev_position = [x, y]
-        num_joints = self.settings['NUM_JOINTS']
 
         _, curr_velocities, curr_torques = self.robot.get_motor_all()
         energy_reward = -np.abs(np.dot(curr_torques,
