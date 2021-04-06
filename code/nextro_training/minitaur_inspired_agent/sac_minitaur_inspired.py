@@ -127,6 +127,7 @@ def sac_minitaur_inspired(
                 policy_optimizer,
                 final_anneal_step
             ),
+            target=FixedTarget(1000),
             writer=writer
         )
 
