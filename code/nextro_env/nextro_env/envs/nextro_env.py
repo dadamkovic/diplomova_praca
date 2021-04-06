@@ -18,6 +18,7 @@ from .settings import load_settings, get_default_settings, save_default_settings
 import os
 import shutil
 from math import isnan
+import pickle
 
 # the urdf location has to be absolute path
 NEXTRO_LOC = __file__.replace('envs/nextro_env.py', 'assets/urdf/nextro.urdf')
@@ -132,8 +133,8 @@ class NextroEnv(gym.Env):
                                robot_name='nextro',
                                settings=self.settings,
                                com_args=kwargs['c_args'],
-                               basePosition=[0, 0, 0.1],
-                               baseOrientation=[0, 0, 0, 1])
+                               basePosition=[-90, 0, 0.1],
+                               baseOrientation=[0, 0, -1, 0])
 
         self.action_space = self.robot.action_space
         self.observation_space = self.robot.observation_space
@@ -172,6 +173,7 @@ class NextroEnv(gym.Env):
         self.pid_regs = []
         self.steps_taken = 0
         self.logging = kwargs['c_args'].logging
+        self.logs = {'x_logs':[],'y_logs':[],'leg_logs':{'j0':[],'j1':[],'j2':[]}}
         if kwargs['c_args'].rew_params is None:
             self._objective_weights = [float(self.settings['FORWARD_WEIGHT']),
                                        float(self.settings['ENERGY_WEIGHT']),
@@ -220,7 +222,7 @@ class NextroEnv(gym.Env):
         self.steps_taken = 0
         self._time_elapsed = 0
         self._old_dist_travelled = 0
-        self._death_wall_pos = 2
+        self._death_wall_pos = -92
 
         # during testing there is no point in making the episodes last different
         # times
@@ -333,7 +335,7 @@ class NextroEnv(gym.Env):
         x, y, z, a, b, c, d = self.robot.robot_body.get_pose()
         yaw, pitch, roll = p.getEulerFromQuaternion((a, b, c, d))
 
-        self._death_wall_pos -= self._death_wall_speed
+        self._death_wall_pos += self._death_wall_speed
 
         # if the robot turns over end episode and give bad reward
         if abs(yaw) > (np.pi/2):
@@ -342,23 +344,25 @@ class NextroEnv(gym.Env):
             print("Terminated by excessive tilt!")
             return -50
 
-        death_wall = (self._death_wall_pos <= x) and (self._death_wall_active)
+        death_wall = (self._death_wall_pos >= x) and (self._death_wall_active)
         timer_reached = self._time_elapsed >= self._episode_length
+        max_distance_reached = x >= 99
         # end episode if enough time has elapsed or death wall met
-        if timer_reached or death_wall:
+        if timer_reached or death_wall or max_distance_reached:
             self.done = True
             self._init = False
-            print(f"Terminated by DW {death_wall}; TIME : {timer_reached}!")
-
+            text = f"Terminated by DW {death_wall}; TIME : {timer_reached}; "
+            text += f"DISTANCE {max_distance_reached}!"
+            print(text)
         # original position might not have been exactly [0,0] so adjust
         # current coordinates
         #minus in the forward reward is because its easier than turning the robot 180
-        forward_reward = -(x - self._prev_position[0])
+        forward_reward = (x - self._prev_position[0])
         drift_reward = -abs(y - self._prev_position[1])
 
         self._prev_position = [x, y]
 
-        _, curr_velocities, curr_torques = self.robot.get_motor_all()
+        curr_pos, curr_velocities, curr_torques = self.robot.get_motor_all()
         energy_reward = -np.abs(np.dot(curr_torques,
                                curr_velocities))*self._time_step
 
@@ -375,13 +379,15 @@ class NextroEnv(gym.Env):
         weighted_objectives = [o*w for o,w in zip(objectives, self._objective_weights)]
         reward = sum(weighted_objectives)
 
-        if self.steps_taken % 150 == 0 and self.logging:
-            print("CURR VELO:")
-            print(curr_velocities)
-            print("YAW, PITCH, ROLL")
-            print(yaw, pitch, roll)
-            print('REWARD')
-            print(reward)
+        if self.logging:
+            steps_taken = self.steps_taken
+            if steps_taken % 10 == 0:
+                self.logs['x_logs'].append(x)
+                self.logs['y_logs'].append(y)
+            self.logs['leg_logs']['j0'].append(curr_pos[0])
+            self.logs['leg_logs']['j1'].append(curr_pos[1])
+            self.logs['leg_logs']['j2'].append(curr_pos[2])
+
         return reward
 
     # get the current angle of every joint and return them as numpy array
@@ -429,6 +435,8 @@ class NextroEnv(gym.Env):
         new_name = os.path.join('runs', new_name)
         shutil.move(old_name, new_name)
         save_default_settings(self.settings, new_name)
+        with open(os.path.join(f"{new_name}","logs.p"),'bw') as fw:
+            pickle.dump(self.logs,fw)
         print('-------------------')
         print(f'Settings saved tp {new_name}')
         print('-------------------')
