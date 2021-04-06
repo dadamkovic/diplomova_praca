@@ -46,14 +46,8 @@ class NextroBot(rb.URDFBasedRobot):
         self.frame_count = 0
         self.com_args = com_args
 
-        final_frame = 0
-        if self.com_args.mode == 'train':
-            if self.com_args.frames != 0:
-                final_frame = self.com_args.frames
-            else:
-                final_frame = self.com_args.episodes * \
-                    self.settings['DEFAULT_MAX_TIME']/self.settings['FRAMES_PER_SECOND']
-        self.final_frame = final_frame
+
+        self.final_frame = self.com_args.frames
 
     # only called once when adding the robot urdf into environment
     # 3 fixed joints are removed from the list of joints and named dictionary
