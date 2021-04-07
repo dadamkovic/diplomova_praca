@@ -84,7 +84,7 @@ def sac_minitaur_inspired(
                 q_1_optimizer,
                 final_anneal_step
             ),
-            target=FixedTarget(1000),
+            target=FixedTarget(10000),
             writer=writer,
             name='q_1'
         )
@@ -98,7 +98,7 @@ def sac_minitaur_inspired(
                 q_2_optimizer,
                 final_anneal_step
             ),
-            target=FixedTarget(1000),
+            target=FixedTarget(10000),
             writer=writer,
             name='q_2'
         )
@@ -127,7 +127,7 @@ def sac_minitaur_inspired(
                 policy_optimizer,
                 final_anneal_step
             ),
-            target=FixedTarget(1000),
+            target=FixedTarget(10000),
             writer=writer
         )
 
@@ -151,4 +151,4 @@ def sac_minitaur_inspired(
             minibatch_size=minibatch_size,
             writer=writer
         ))
-    return _sac
+        return _sac
