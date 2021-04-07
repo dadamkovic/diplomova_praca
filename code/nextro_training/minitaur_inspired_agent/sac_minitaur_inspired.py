@@ -151,4 +151,4 @@ def sac_minitaur_inspired(
             minibatch_size=minibatch_size,
             writer=writer
         ))
-        return _sac
+    return _sac
