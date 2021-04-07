@@ -166,7 +166,7 @@ class NextroEnv(gym.Env):
         self.obs_buffer = deque(np.zeros(obs_size) for _ in range(prev_obs))
 
         self._death_wall_pos = 2
-        self._death_wall_speed = 0.008
+        self._death_wall_speed = 2*0.008
         #true by default
         self._death_wall_active = kwargs['c_args'].death_wall
 
@@ -336,7 +336,8 @@ class NextroEnv(gym.Env):
         yaw, pitch, roll = p.getEulerFromQuaternion((a, b, c, d))
 
         self._death_wall_pos += self._death_wall_speed
-
+        if x-self._death_wall_pos >2:
+            self._death_wall_pos = x-2
         # if the robot turns over end episode and give bad reward
         if abs(yaw) > (np.pi/2):
             self.done = True
