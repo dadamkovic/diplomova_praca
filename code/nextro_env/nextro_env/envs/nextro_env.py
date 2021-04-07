@@ -173,7 +173,7 @@ class NextroEnv(gym.Env):
         self.pid_regs = []
         self.steps_taken = 0
         self.logging = kwargs['c_args'].logging
-        self.logs = {'x_logs':[],'y_logs':[],'leg_logs':{'j0':[],'j1':[],'j2':[]}}
+        self.logs = {'x_y_logs':[],'leg_logs':[]}
         if kwargs['c_args'].rew_params is None:
             self._objective_weights = [float(self.settings['FORWARD_WEIGHT']),
                                        float(self.settings['ENERGY_WEIGHT']),
@@ -383,11 +383,8 @@ class NextroEnv(gym.Env):
         if self.logging:
             steps_taken = self.steps_taken
             if steps_taken % 10 == 0:
-                self.logs['x_logs'].append(x)
-                self.logs['y_logs'].append(y)
-            self.logs['leg_logs']['j0'].append(curr_pos[0])
-            self.logs['leg_logs']['j1'].append(curr_pos[1])
-            self.logs['leg_logs']['j2'].append(curr_pos[2])
+                self.logs['x_y_logs'].append([x,y])
+            self.logs['leg_logs'].append(curr_pos)
 
         return reward
 
