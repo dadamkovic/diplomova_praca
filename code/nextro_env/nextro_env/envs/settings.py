@@ -63,13 +63,13 @@ PREV_OBS_ON_INPUT = 5
 # if PIDs are to be used thsi determins [kp, ki, kd] parameters
 PID_PARAMS = [0.1, 0, 0.003]
 # multiple of the dist eward
-FORWARD_WEIGHT = 500
-ENERGY_WEIGHT = 0.5
-DRIFT_WEIGHT = 100
-SHAKE_WEIGHT = 100
+FORWARD_WEIGHT = 10000
+ENERGY_WEIGHT = 0.8
+DRIFT_WEIGHT = 65
+SHAKE_WEIGHT = 15
 POS_GAIN_START = 0.06
 POS_GAIN_FINAL = 0.08
-
+RANDOM_DISABLE_CHANCE = 0
 
 
 def add_non_user_settings(set_dict):
@@ -108,6 +108,7 @@ def get_default_settings(manual_modify=False):
     set_dict['POS_GAIN_FINAL'] = POS_GAIN_FINAL
     set_dict['POS_GAIN_START'] = POS_GAIN_START
     set_dict['COLLISION'] = True
+    set_dict['RANDOM_DISABLE_CHANCE'] = RANDOM_DISABLE_CHANCE
     if manual_modify:
         set_dict = manually_mod_settings(set_dict)
 

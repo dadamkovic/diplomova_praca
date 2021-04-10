@@ -173,6 +173,8 @@ class NextroEnv(gym.Env):
         ##to remove
         self._avg_obj = [0,0,0,0]
 
+        self._random_disable_idx = None
+
         self.pid_regs = []
         self.steps_taken = 0
         self.logging = kwargs['c_args'].logging
@@ -226,6 +228,11 @@ class NextroEnv(gym.Env):
         self._time_elapsed = 0
         self._old_dist_travelled = 0
         self._death_wall_pos = -92
+
+        if np.random.rand() < self.settings['RANDOM_DISABLE_CHANCE']:
+            self._random_disable_idx = np.random.choice([x for x in range(0,18,3)])
+        else:
+            self._random_disable_idx = None
 
         # during testing there is no point in making the episodes last different
         # times
@@ -287,6 +294,11 @@ class NextroEnv(gym.Env):
                 sys.exit()
         pid_action = 0
 
+        if self._random_disable_idx is not None:
+            action[self._random_disable_idx] = 0
+            action[self._random_disable_idx+1] = -np.pi/2
+            action[self._random_disable_idx+2] = -np.pi/2
+
         # by default motors are not mirrored so negative angle on one side
         # is positive angle on the other, mirroring is done here
         for i in range(self.settings['NUM_JOINTS']//2):
@@ -296,6 +308,9 @@ class NextroEnv(gym.Env):
                 pid_action = self.pid_regs[idx].update(action[idx],
                                                        self.new_observation[idx])
                 action[idx] = self.new_observation[idx] + pid_action
+
+
+
         return action
 
     def step(self, raw_action):
