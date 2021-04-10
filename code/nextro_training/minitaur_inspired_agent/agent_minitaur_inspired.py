@@ -41,7 +41,8 @@ if __name__ == '__main__':
 
     agent = sac_minitaur_inspired(device=args.device,
                                   last_frame=args.frames,
-                                  pretrained_models=pretrained_models)
+                                  pretrained_models=pretrained_models,
+                                  train_parallel=args.train_parallel)
     exp = SingleEnvExperiment(agent,
                               env,
                               render=args.render)

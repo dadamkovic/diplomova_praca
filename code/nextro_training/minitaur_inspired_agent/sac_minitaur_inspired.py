@@ -38,6 +38,7 @@ def sac_minitaur_inspired(
         v_model_constructor=fc_v,
         policy_model_constructor=fc_soft_policy,
         pretrained_models=None,
+        train_parallel=False,
 ):
     """
     SAC continuous control preset.
@@ -68,7 +69,9 @@ def sac_minitaur_inspired(
         v_model = v_model_constructor(env).to(device)
         q_1_model = q1_model_constructor(env).to(device)
         q_2_model = q2_model_constructor(env).to(device)
-        policy_model = policy_model_constructor(env).to(device)
+        #quick and dirty implementation of parallel branch un/freeze
+        policy_model = policy_model_constructor(env=env,
+                                                train_parallel=train_parallel).to(device)
 
         if pretrained_models is not None:
             q_1_model = pretrained_models.q_1.model.to(device)

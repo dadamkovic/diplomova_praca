@@ -170,6 +170,9 @@ class NextroEnv(gym.Env):
         #true by default
         self._death_wall_active = kwargs['c_args'].death_wall
 
+        ##to remove
+        self._avg_obj = [0,0,0,0]
+
         self.pid_regs = []
         self.steps_taken = 0
         self.logging = kwargs['c_args'].logging
@@ -333,13 +336,13 @@ class NextroEnv(gym.Env):
     # plus the discounted total distance from starting position
     def _get_reward_update_done(self):
         x, y, z, a, b, c, d = self.robot.robot_body.get_pose()
-        yaw, pitch, roll = p.getEulerFromQuaternion((a, b, c, d))
+        roll, pitch, yaw = p.getEulerFromQuaternion((a, b, c, d))
 
         self._death_wall_pos += self._death_wall_speed
         if x-self._death_wall_pos >2:
             self._death_wall_pos = x-2
         # if the robot turns over end episode and give bad reward
-        if abs(yaw) > (np.pi/2):
+        if abs(roll) > (np.pi/2):
             self.done = True
             self._init = False
             print("Terminated by excessive tilt!")
@@ -374,13 +377,17 @@ class NextroEnv(gym.Env):
                             )
 
         objectives = [forward_reward, energy_reward, drift_reward, shake_reward]
+
+
         for o in objectives:
             if isnan(o):
                 raise Exception("NaN supplied from simulation!")
         weighted_objectives = [o*w for o,w in zip(objectives, self._objective_weights)]
         reward = sum(weighted_objectives)
 
+
         if self.logging:
+            self._avg_obj = np.add(self._avg_obj, weighted_objectives)
             steps_taken = self.steps_taken
             if steps_taken % 10 == 0:
                 self.logs['x_y_logs'].append([x,y])
@@ -402,7 +409,7 @@ class NextroEnv(gym.Env):
 
         robot_death_diff = np.clip(self._death_wall_pos - x , -1, 3)
         #the fixed [0,0,0,0] will later be used as control bits
-
+        #print(f"J-angle [yaw]: {np.rad2deg(joint_angles[2])}")
         self.new_observation = np.concatenate((joint_angles,
                                                joint_velocities,
                                                body_angles,
@@ -423,6 +430,7 @@ class NextroEnv(gym.Env):
         #      self.robot.jdict[joint].set_position(angles[idx])
 
     def store_settings(self, dir_name):
+
         dir_names = os.listdir('./runs')
         old_name = os.path.join('./runs', dir_name)
         new_name = 'run_0'
@@ -433,8 +441,11 @@ class NextroEnv(gym.Env):
         new_name = os.path.join('runs', new_name)
         shutil.move(old_name, new_name)
         save_default_settings(self.settings, new_name)
-        with open(os.path.join(f"{new_name}","logs.p"),'bw') as fw:
-            pickle.dump(self.logs,fw)
+        if self.logging:
+            with open(os.path.join(f"{new_name}","logs.p"),'bw') as fw:
+                pickle.dump(self.logs,fw)
+            print("[forward_reward, energy_reward, drift_reward, shake_reward]")
+            print(f"Reward avg: {np.multiply(self._avg_obj,1/self.steps_taken)}")
         print('-------------------')
         print(f'Settings saved tp {new_name}')
         print('-------------------')

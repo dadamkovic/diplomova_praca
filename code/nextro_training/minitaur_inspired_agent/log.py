@@ -5,7 +5,7 @@ import pickle
 import argparse
 
 colors = ['b','r','g']
-labels = ['hip0','hip1','hip2']
+labels = ['hip','knee','ankle']
 
 def makeGraphs(logs):
     logs = pickle.load(open(logs,'rb'))
@@ -23,16 +23,17 @@ def makeGraphs(logs):
     plt.ylabel('Y-axis [m]')
     plt.show()
 
-    for idx in range(0,9,3):
-        j = [item[idx] for item in logs['leg_logs']]
-        j = np.rad2deg(j)
-        plt.figure(2)
-        plt.subplot(3,1,idx//3+1)
-        length = len(j)
-        plt.plot(np.linspace(0, length/30, length), j,c=colors[idx//3],label=labels[idx//3])
-        plt.legend(loc='lower left')
-    plt.xlabel("Time [s]")
-    plt.ylabel("Angle [deg]")
+    for joint_t in range(0,3):
+        for idx in range(joint_t,18,3):
+            j = [item[idx] for item in logs['leg_logs']]
+            j = np.rad2deg(j)
+            plt.figure(joint_t+2)
+            plt.subplot(2,3,idx//3+1)
+            length = len(j)
+            plt.plot(np.linspace(0, length/30, length), j,c=colors[joint_t],label=f"{labels[joint_t]}{idx//3}")
+            plt.legend(loc='lower left')
+            plt.xlabel("Time [s]")
+            plt.ylabel("Angle [deg]")
 
     plt.grid(ls='--',c='k',alpha=0.5)
     plt.show()

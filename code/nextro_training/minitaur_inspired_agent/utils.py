@@ -92,5 +92,8 @@ def resolve_arguments(parser):
                         action='store_false',
                         help="If set death wall will be disabled.")
 
+    parser.add_argument("--train_parallel", default=False, required=False, action='store_true',
+                        help="Freezes main branch and only trains the small parallel one.")
+
     args = parser.parse_args()
     return args
