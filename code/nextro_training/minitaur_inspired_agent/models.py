@@ -40,25 +40,47 @@ class ParallelNet(nn.Module):
         out = self.final_layer(h00.add(h10))
         return out
 
-def fc_q(env, hidden1=516, hidden2=516):
+def fc_q(env, hidden1=516, hidden2=20, train_parallel=False):
     print("Custom Q loaded")
-    return nn.Sequential(
-        nn.Linear(env.state_space.shape[0] + env.action_space.shape[0] + 1, hidden1),
-        nn.ReLU(),
-        nn.Linear(hidden1, hidden2),
-        nn.ReLU(),
-        nn.Linear0(hidden2, 1),
-    )
 
-def fc_v(env, hidden1=516, hidden2=516):
+    net =  ParallelNet(env.state_space.shape[0] + env.action_space.shape[0] + 1,
+        1,
+        hidden_m=[hidden1,hidden1],
+        hidden_s=[hidden1,hidden2],)
+
+    if not train_parallel:
+        net.hidden_10.weight.requires_grad = False
+        net.hidden_10.bias.requires_grad = False
+        net.hidden_11.weight.requires_grad = False
+        net.hidden_11.bias.requires_grad = False
+    else:
+        net.hidden_00.weight.requires_grad = False
+        net.hidden_00.bias.requires_grad = False
+        net.hidden_01.weight.requires_grad = False
+        net.hidden_01.bias.requires_grad = False
+    return net
+
+
+def fc_v(env, hidden1=516, hidden2=20, train_parallel=False):
     print("Custom V loaded")
-    return nn.Sequential(
-        nn.Linear(env.state_space.shape[0] + 1, hidden1),
-        nn.ReLU(),
-        nn.Linear(hidden1, hidden2),
-        nn.ReLU(),
-        nn.Linear0(hidden2, 1),
-    )
+    net =  ParallelNet(env.state_space.shape[0] + 1,
+        1,
+        hidden_m=[hidden1,hidden1],
+        hidden_s=[hidden1,hidden2],)
+
+    if not train_parallel:
+        net.hidden_10.weight.requires_grad = False
+        net.hidden_10.bias.requires_grad = False
+        net.hidden_11.weight.requires_grad = False
+        net.hidden_11.bias.requires_grad = False
+    else:
+        net.hidden_00.weight.requires_grad = False
+        net.hidden_00.bias.requires_grad = False
+        net.hidden_01.weight.requires_grad = False
+        net.hidden_01.bias.requires_grad = False
+    return net
+
+
 
 def fc_soft_policy(env, hidden1=516, hidden2=20, train_parallel=False):
     print("Custom PI loaded")

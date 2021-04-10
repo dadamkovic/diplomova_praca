@@ -66,9 +66,12 @@ def sac_minitaur_inspired(
     def _sac(env, writer=DummyWriter()):
         final_anneal_step = (last_frame - replay_start_size) // update_frequency
 
-        v_model = v_model_constructor(env).to(device)
-        q_1_model = q1_model_constructor(env).to(device)
-        q_2_model = q2_model_constructor(env).to(device)
+        v_model = v_model_constructor(env,
+                                      train_parallel=train_parallel).to(device)
+        q_1_model = q1_model_constructor(env,
+                                         train_parallel=train_parallel).to(device)
+        q_2_model = q2_model_constructor(env,
+                                         train_parallel=train_parallel).to(device)
         #quick and dirty implementation of parallel branch un/freeze
         policy_model = policy_model_constructor(env=env,
                                                 train_parallel=train_parallel).to(device)
@@ -79,7 +82,7 @@ def sac_minitaur_inspired(
             v_model = pretrained_models.v.model.to(device)
             policy_model = pretrained_models.policy.model.to(device)
 
-        q_1_optimizer = Adam(q_1_model.parameters(), lr=lr_q)
+        q_1_optimizer = Adam(filter(lambda p: p.requires_grad, q_1_model.parameters()), lr=lr_q)
         q_1 = QContinuousCtrlRep(
             q_1_model,
             q_1_optimizer,
@@ -93,7 +96,7 @@ def sac_minitaur_inspired(
         )
 
 
-        q_2_optimizer = Adam(q_2_model.parameters(), lr=lr_q)
+        q_2_optimizer = Adam(filter(lambda p: p.requires_grad, q_2_model.parameters()), lr=lr_q)
         q_2 = QContinuousCtrlRep(
             q_2_model,
             q_2_optimizer,
@@ -107,7 +110,7 @@ def sac_minitaur_inspired(
         )
 
 
-        v_optimizer = Adam(v_model.parameters(), lr=lr_v)
+        v_optimizer = Adam(filter(lambda p: p.requires_grad, v_model.parameters()), lr=lr_v)
         v = VNetworkCtrlRep(
             v_model,
             v_optimizer,

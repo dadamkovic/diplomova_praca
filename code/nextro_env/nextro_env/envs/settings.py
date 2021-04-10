@@ -63,10 +63,10 @@ PREV_OBS_ON_INPUT = 5
 # if PIDs are to be used thsi determins [kp, ki, kd] parameters
 PID_PARAMS = [0.1, 0, 0.003]
 # multiple of the dist eward
-FORWARD_WEIGHT = 500
-ENERGY_WEIGHT = 0.5
-DRIFT_WEIGHT = 100
-SHAKE_WEIGHT = 100
+FORWARD_WEIGHT = 10000
+ENERGY_WEIGHT = 0.8
+DRIFT_WEIGHT = 65
+SHAKE_WEIGHT = 18
 POS_GAIN_START = 0.06
 POS_GAIN_FINAL = 0.08
 
