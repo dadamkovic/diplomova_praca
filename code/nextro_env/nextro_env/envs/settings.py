@@ -170,6 +170,9 @@ class FunctionItemMod(FunctionItem):
 #using a simple menu load parameters from the user
 #TODO: look for a way to implement simple explanations of what the parameters do
 def manually_mod_settings(set_dict):
+    #quick and dirsty workaround - older settings files don't include rand, d.
+    if 'RANDOM_DISABLE_CHANCE' not in set_dict.keys():
+        set_dict['RANDOM_DISABLE_CHANCE'] = RANDOM_DISABLE_CHANCE
     menu = ConsoleMenu("Tune parameters", "[original value] / <new value>")
     menu_items = []
     for idx, (key, val) in enumerate(set_dict.items()):
