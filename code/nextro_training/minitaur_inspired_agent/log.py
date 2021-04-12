@@ -30,6 +30,8 @@ def makeGraphs(logs):
             plt.figure(joint_t+2)
             plt.subplot(2,3,idx//3+1)
             length = len(j)
+            if idx  < 9:
+                j *= -1
             plt.plot(np.linspace(0, length/30, length), j,c=colors[joint_t],label=f"{labels[joint_t]}{idx//3}")
             plt.legend(loc='lower left')
             plt.xlabel("Time [s]")
