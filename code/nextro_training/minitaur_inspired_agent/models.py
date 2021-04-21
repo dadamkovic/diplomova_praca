@@ -40,25 +40,42 @@ class ParallelNet(nn.Module):
         out = self.final_layer(h00.add(h10))
         return out
 
-def fc_q(env, hidden1=516, hidden2=516):
+def fc_q(env, hidden1=516, hidden2=516, train_parallel=False):
     print("Custom Q loaded")
-    return nn.Sequential(
+    net = nn.Sequential(
         nn.Linear(env.state_space.shape[0] + env.action_space.shape[0] + 1, hidden1),
         nn.ReLU(),
         nn.Linear(hidden1, hidden2),
         nn.ReLU(),
         nn.Linear0(hidden2, 1),
     )
+    if train_parallel:
+        for i in range(len(net)):
+            try:
+                net[i].bias.requires_grad = False
+                net[i].weight.requires_grad = False
+            except Exception:
+                pass
+    return net
 
-def fc_v(env, hidden1=516, hidden2=516):
+def fc_v(env, hidden1=516, hidden2=516,train_parallel=False):
     print("Custom V loaded")
-    return nn.Sequential(
+    net = nn.Sequential(
         nn.Linear(env.state_space.shape[0] + 1, hidden1),
         nn.ReLU(),
         nn.Linear(hidden1, hidden2),
         nn.ReLU(),
         nn.Linear0(hidden2, 1),
     )
+    if train_parallel:
+        for i in range(len(net)):
+            try:
+                net[i].bias.requires_grad = False
+                net[i].weight.requires_grad = False
+            except Exception:
+                pass
+
+    return net
 
 def fc_soft_policy(env, hidden1=516, hidden2=20, train_parallel=False):
     print("Custom PI loaded")

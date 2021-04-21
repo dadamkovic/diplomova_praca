@@ -229,6 +229,7 @@ class NextroEnv(gym.Env):
         self._old_dist_travelled = 0
         self._death_wall_pos = -92
 
+
         if np.random.rand() < self.settings['RANDOM_DISABLE_CHANCE']:
             self._random_disable_idx = np.random.choice([x for x in range(0,18,3)])
         else:
@@ -257,7 +258,8 @@ class NextroEnv(gym.Env):
             self._reset_joints()
         else:
             p.resetSimulation(self.client)
-            p.setGravity(0, 0, -10)
+            # changedd settings
+            p.setGravity(0, 0, -11)
             plane_id = p.loadURDF("plane.urdf")
             #p.changeDynamics(plane_id, -1, lateralFriction=10)
             self.robot.reset(p)
