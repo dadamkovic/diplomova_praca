@@ -10,6 +10,26 @@ from models import fc_q, fc_v, fc_soft_policy
 from wrappers import QContinuousCtrlRep, SACCtrlRep, VNetworkCtrlRep, SoftDeterministicPolicyCtrlRep
 
 
+def disable_grads(net):
+    for i in range(len(net)):
+        try:
+            net[i].bias.requires_grad = False
+            net[i].weight.requires_grad = False
+        except Exception:
+            pass
+    return net
+
+def disable_main_b_grads(net):
+    net.hidden_00.weight.requires_grad = False
+    net.hidden_00.bias.requires_grad = False
+    net.hidden_01.weight.requires_grad = False
+    net.hidden_01.bias.requires_grad = False
+
+    net.hidden_10.weight.requires_grad = True
+    net.hidden_10.bias.requires_grad = True
+    net.hidden_11.weight.requires_grad = True
+    net.hidden_11.bias.requires_grad = True
+    return net
 
 
 def sac_minitaur_inspired(
@@ -81,6 +101,12 @@ def sac_minitaur_inspired(
             q_2_model = pretrained_models.q_2.model.to(device)
             v_model = pretrained_models.v.model.to(device)
             policy_model = pretrained_models.policy.model.to(device)
+            if train_parallel:
+                #q_1_model = disable_grads(q_1_model)
+                #q_2_model = disable_grads(q_2_model)
+                #v_model = disable_grads(v_model)
+                policy_model = disable_main_b_grads(policy_model)
+
 
         q_1_optimizer = Adam(filter(lambda p: p.requires_grad, q_1_model.parameters()), lr=lr_q)
         q_1 = QContinuousCtrlRep(
@@ -143,6 +169,7 @@ def sac_minitaur_inspired(
             device=device
         )
 
+        #print(policy_model.hidden_01.bias.requires_grad)
         return TimeFeature(SACCtrlRep(
             policy=policy,
             q_1=q_1,
