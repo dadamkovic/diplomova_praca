@@ -1,3 +1,0 @@
-Matematické symboly a vzorce, ktoré majú byť súčasťou bežného
-textu sa označujú párom dolárov a zobrazujú sa nasledovne: $x^2 + \alpha$.
-Tento odsek by sa teda dal zapísať nasledujúcim spôsobom:

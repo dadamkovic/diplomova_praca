@@ -1,1 +1,0 @@
-\footnote{Poznámka pod čiarou.}

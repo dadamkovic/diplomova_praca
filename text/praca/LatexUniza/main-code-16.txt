@@ -1,4 +1,0 @@
-\begin{align}
-x &= 2a - 3b \\
-y &= x^2.
-\end{align}

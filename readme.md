@@ -62,7 +62,19 @@ Run:
 
 
 -----------------------------------------------------------------
+4. GIT BRANCHES
 -----------------------------------------------------------------
-For other details on how to use the code and hwo it works see text/thesis.pdf
+Check the logs to learn what branches are for. Master branch should suffice for most interaction with the software.
+
+-----------------------------------------------------------------
+5. MISC NOTES
+-----------------------------------------------------------------
+At one point random turining on and off of limbs was added. When loading older version of the network it might be
+neccessary to use the --man_mod flag to update the settings (no actual changes in these settings need to be made).
+
+Installing pre-commit might be neccessary in order to work with the git repository as git commit hooks were used.
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+For other details on how to use the code and how it works see text/thesis.pdf
 -----------------------------------------------------------------
 -----------------------------------------------------------------

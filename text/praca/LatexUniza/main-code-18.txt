@@ -1,5 +1,0 @@
-\begin{enumerate}
-\item položka,
-\item položka,
-\item položka.
-\end{enumerate}

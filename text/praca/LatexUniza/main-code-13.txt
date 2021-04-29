@@ -1,1 +1,0 @@
-Odkaz na rovnicu \eqref{eq:dolezita_rovnica} z textu.

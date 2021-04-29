@@ -1,4 +1,0 @@
-\begin{equation}
-x^2 + \alpha,
-\label{eq:dolezita_rovnica}
-\end{equation}

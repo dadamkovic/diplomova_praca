@@ -1,2 +1,0 @@
-\section{Členenie textu}
-\label{sec:clenenie_textu}

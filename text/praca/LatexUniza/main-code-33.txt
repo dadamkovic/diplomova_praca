@@ -1,6 +1,0 @@
-@Electronic{latexTables,
-  Title                    = {LaTeX/Tables},
-  HowPublished             = {online},
-  Url                      = {https://en.wikibooks.org/wiki/LaTeX/Tables},
-  Urldate                  = {2017-08-22}
-}

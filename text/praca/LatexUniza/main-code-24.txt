@@ -1,8 +1,0 @@
-@Book{Hynek2008,
-  Title                    = {Genetické algoritmy a genetické programování},
-  Author                   = {Josef Hynek},
-  Publisher                = {Grada Publishing, a.s.},
-  Year                     = {2008},
-  Address                  = {Praha},
-  ISBN                     = {978-80-7300-218-3}
-}
