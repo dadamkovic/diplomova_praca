@@ -69,12 +69,12 @@ Check the logs to learn what branches are for. Master branch should suffice for 
 -----------------------------------------------------------------
 5. MISC NOTES
 -----------------------------------------------------------------
-At one point random turining on and off of limbs was added. When loading older version of the network it might be
+* At one point random turining on and off of limbs was added. When loading older version of the network it might be
 neccessary to use the --man_mod flag to update the settings (no actual changes in these settings need to be made).
-
-Installing pre-commit might be neccessary in order to work with the git repository as git commit hooks were used.
+* Installing pre-commit might be neccessary in order to work with the git repository as git commit hooks were used.
+* Github repo can be found at: https://github.com/dadamkovic/diplomova_praca
 -----------------------------------------------------------------
 -----------------------------------------------------------------
-For other details on how to use the code and how it works see text/thesis.pdf
+For other details on how to use the code and how it works see the thesis text in text directory.
 -----------------------------------------------------------------
 -----------------------------------------------------------------
