@@ -56,7 +56,7 @@ Navigate to:
 
 Run:
 
-	./agent_minitaur_inspired.py --mode=test --episodes=10 --loc=best/long_train --render
+	./agent_minitaur_inspired.py --mode=test --episodes=10 --loc=best/fast_run --render
 
 *This will load a pretrained example network, render the environment and run 10 test episodes
 
